@@ -316,6 +316,8 @@ function toggleBook(btn) {
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
   document.querySelectorAll('.book-btn').forEach(function(el) { el.classList.remove('open'); });
   if (!wasOpen) {
+    document.getElementById('search-input').value = '';
+    hideSearch();
     openBook(abbr, btn, bc);
   }
 }
@@ -539,6 +541,8 @@ function highlightAndScroll(strongs) {
 }
 
 function goHome() {
+  document.getElementById('search-input').value = '';
+  hideSearch();
   var btn = document.querySelector('[data-abbr="Gen"]');
   var bc = document.getElementById('bc-Gen');
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
