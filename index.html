@@ -242,6 +242,11 @@ async function openBook(abbr, btn, bc) {
   goChapter(1);
 }
 
+function hideSearch() {
+  document.getElementById('search-results').style.display = 'none';
+  document.getElementById('reading-pane').classList.remove('hidden');
+}
+
 function goChapter(ch) {
   currentChapter = ch;
   // Highlight active chapter
