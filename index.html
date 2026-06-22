@@ -81,8 +81,14 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 .mkey{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint)}
 .mval{font-size:12px;color:var(--accent);margin-top:2px;text-transform:capitalize}
 .kjv-tag{display:inline-block;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);color:var(--gold);font-size:10px;padding:2px 7px;border-radius:2px;margin:2px 2px 2px 0}
-.testament-label{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint);padding:8px 16px 3px;border-top:1px solid var(--border);margin-top:2px}
-.testament-label:first-child{border-top:none;margin-top:0}
+.testament-group{}
+.testament-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px 7px 12px;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.testament-header:first-child{border-top:none}
+.testament-title{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-faint);font-family:'Inter',sans-serif}
+.testament-arrow{font-size:8px;color:var(--text-faint);transition:transform .15s}
+.testament-header.open .testament-arrow{transform:rotate(90deg)}
+.testament-books{display:none}
+.testament-books.open{display:block}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -270,7 +276,16 @@ function renderBookList() {
   for (var i = 0; i < ALL_BOOKS.length; i++) {
     var b = ALL_BOOKS[i];
     if (b.t !== lastT) {
-      html += '<div class="testament-label">' + (b.t === 'OT' ? 'Old Testament' : 'New Testament') + '</div>';
+      if (lastT !== null) html += '</div></div>';
+      var tid = b.t === 'OT' ? 'grp-ot' : 'grp-nt';
+      var tlabel = b.t === 'OT' ? 'Old Testament' : 'New Testament';
+      var openClass = b.t === 'OT' ? ' open' : '';
+      html += '<div class="testament-group">';
+      html += '<div class="testament-header' + openClass + '" onclick="toggleTestament(this,\'' + tid + '\')">';
+      html += '<span class="testament-title">' + tlabel + '</span>';
+      html += '<span class="testament-arrow">&#9658;</span>';
+      html += '</div>';
+      html += '<div class="testament-books' + openClass + '" id="' + tid + '">';
       lastT = b.t;
     }
     html += '<div class="book-item">';
@@ -278,7 +293,13 @@ function renderBookList() {
     html += '<div class="book-chapters" id="bc-' + b.a + '"></div>';
     html += '</div>';
   }
+  if (lastT !== null) html += '</div></div>';
   document.getElementById('book-list').innerHTML = html;
+}
+
+function toggleTestament(hdr, grpId) {
+  hdr.classList.toggle('open');
+  document.getElementById(grpId).classList.toggle('open');
 }
 
 function toggleBook(btn) {
@@ -609,20 +630,45 @@ function doSearch(q) {
     '2Jn':'2 John','3Jn':'3 John',Jud:'Jude',Re:'Revelation'
   };
 
+  // Sort: OT books first, then NT (preserving canonical order within each)
+  var OT_ORDER = ['Gen','Exo','Lev','Num','Deu','Jos','Jdg','Rut','1Sa','2Sa',
+    '1Ki','2Ki','1Ch','2Ch','Ezr','Neh','Est','Job','Psa','Pro','Ecc','Sng',
+    'Isa','Jer','Lam','Ezk','Dan','Hos','Jol','Amo','Oba','Jon','Mic','Nam',
+    'Hab','Zep','Hag','Zec','Mal'];
+  var NT_ORDER = ['Mt','Mk','Lk','Jn','Ac','Ro','1Co','2Co','Ga','Eph','Php',
+    'Col','1Th','2Th','1Ti','2Ti','Tit','Phm','Heb','Jas','1Pe','2Pe','1Jn',
+    '2Jn','3Jn','Jud','Re'];
+  var CANON_ORDER = OT_ORDER.concat(NT_ORDER);
+  vids.sort(function(a, b) {
+    var va = searchIndex.v[a], vb = searchIndex.v[b];
+    var ia = CANON_ORDER.indexOf(va[0]), ib = CANON_ORDER.indexOf(vb[0]);
+    if (ia !== ib) return ia - ib;
+    if (va[1] !== vb[1]) return va[1] - vb[1];
+    return va[2] - vb[2];
+  });
+
+  var LIMIT = 500;
+  var showing = Math.min(vids.length, LIMIT);
   var html = '<div style="color:var(--text-faint);font-size:11px;margin-bottom:20px">' +
     vids.length + ' verse' + (vids.length !== 1 ? 's' : '') + ' — Bible</div>';
 
-  for (var i = 0; i < Math.min(vids.length, 100); i++) {
+  var lastSection = null;
+  for (var i = 0; i < showing; i++) {
     var verse = searchIndex.v[vids[i]];
     var abbr = verse[0], ch = verse[1], v = verse[2], text = verse[3];
     var bookName = BOOK_NAMES[abbr] || abbr;
+    var section = OT_ORDER.indexOf(abbr) >= 0 ? 'Old Testament' : 'New Testament';
+    if (section !== lastSection) {
+      html += '<div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-faint);margin:16px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border)">' + section + '</div>';
+      lastSection = section;
+    }
     html += '<div class="sr-ref" onclick="jumpTo(\'' + abbr + '\',' + ch + ')">' +
       bookName + ' ' + ch + ':' + v + '</div>';
     html += '<div class="sr-text">' + highlight(text) + '</div>';
   }
 
-  if (vids.length > 100) {
-    html += '<div style="color:var(--text-faint);font-size:11px;margin-top:8px">Showing 100 of ' + vids.length + ' results — refine your search</div>';
+  if (vids.length > LIMIT) {
+    html += '<div style="color:var(--text-faint);font-size:11px;margin-top:12px">Showing ' + LIMIT + ' of ' + vids.length + ' results — refine your search</div>';
   }
 
   sr.innerHTML = html;
