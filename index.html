@@ -200,6 +200,8 @@ var currentBookData = null;
 var currentChapter = 1;
 var selectedWordEl = null;
 var currentMode = 'kjv';
+var pinnedTok = null;
+var pinnedStrongs = null;
 var bookCache = {};
 
 // ── BOOK LIST WITH ACCORDION ───────────────────────────────────────────────
@@ -308,11 +310,16 @@ function renderVerses(verses) {
     html += '<div class="verse-row"><span class="vnum">' + verse.v + '</span><span class="verse-body">' + words + '</span></div>';
   }
   document.getElementById('reading-pane').innerHTML = html;
+  if (pinnedStrongs) {
+    setTimeout(function() { highlightAndScroll(pinnedStrongs); }, 50);
+  }
 }
 
 // ── WORD CLICK ─────────────────────────────────────────────────────────────
 function selectWord(el) {
   var tok = JSON.parse(decodeURIComponent(el.dataset.w));
+  pinnedTok = tok;
+  pinnedStrongs = tok.s || null;
   if (selectedWordEl) selectedWordEl.classList.remove('selected');
   selectedWordEl = el;
   el.classList.add('selected');
@@ -398,6 +405,25 @@ function resetDetail() {
 function setLoading(msg) { document.getElementById('reading-pane').innerHTML = '<div id="loading">' + msg + '</div>'; }
 
 // ── HOME ───────────────────────────────────────────────────────────────────
+function highlightAndScroll(strongs) {
+  // Find all linked words in the reading pane
+  var words = document.querySelectorAll('.ew.linked');
+  var first = null;
+  for (var i = 0; i < words.length; i++) {
+    try {
+      var tok = JSON.parse(decodeURIComponent(words[i].dataset.w));
+      if (tok.s === strongs) {
+        words[i].classList.add('selected');
+        if (!first) first = words[i];
+      }
+    } catch(e) {}
+  }
+  // Scroll first occurrence into view
+  if (first) {
+    first.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+}
+
 function goHome() {
   var btn = document.querySelector('[data-abbr="Mt"]');
   var bc = document.getElementById('bc-Mt');
@@ -556,10 +582,8 @@ function showConcordance(strongs) {
 
 // ── JUMP TO BOOK+CHAPTER ──────────────────────────────────────────────────
 async function jumpTo(abbr, ch) {
-  // Close search
   document.getElementById('search-input').value = '';
   hideSearch();
-  // Open book accordion
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
   document.querySelectorAll('.book-btn').forEach(function(el) { el.classList.remove('open'); });
   var btn = document.querySelector('[data-abbr="' + abbr + '"]');
@@ -567,8 +591,46 @@ async function jumpTo(abbr, ch) {
   if (btn && bc) {
     await openBook(abbr, btn, bc);
     goChapter(ch);
-    // Scroll book into view in nav
     if (btn) btn.scrollIntoView({block:'nearest'});
+    // Repopulate detail panel with pinned word
+    if (pinnedTok) {
+      setTimeout(function() {
+        var entry = LEX[pinnedTok.s] || {};
+        var m = pinnedTok.m || {};
+        var morphKeys = [['pos','Part of speech'],['tense','Tense'],['voice','Voice'],
+          ['mood','Mood'],['person','Person'],['case','Case'],['number','Number'],['gender','Gender']];
+        var morphHtml = '';
+        for (var i = 0; i < morphKeys.length; i++) {
+          if (m[morphKeys[i][0]]) morphHtml += '<div><div class="mkey">' + morphKeys[i][1] + '</div><div class="mval">' + m[morphKeys[i][0]] + '</div></div>';
+        }
+        var kjvTags = '';
+        if (entry.k) {
+          var kjv = entry.k.replace(/^[^a-zA-Z]+/, '');
+          var parts = kjv.split(/[,;]/);
+          for (var j = 0; j < Math.min(parts.length, 8); j++) {
+            var u = parts[j].trim().replace(/\s+/g, ' ');
+            if (u) kjvTags += '<span class="kjv-tag">' + u + '</span>';
+          }
+        }
+        var cleanGk = (pinnedTok.g || '').replace(/[.,;·?!'"()⠀-⣿·]/g, '');
+        var showLemma = pinnedTok.l && pinnedTok.l !== cleanGk;
+        var detail = '<div id="word-hero">';
+        detail += '<div id="hero-eng">' + pinnedTok.e + '</div>';
+        detail += '<div id="hero-gk">' + (cleanGk || pinnedTok.l || '') + '</div>';
+        if (showLemma) detail += '<div id="hero-lemma">' + pinnedTok.l + '</div>';
+        if (entry.t) detail += '<div id="hero-translit">' + entry.t + '</div>';
+        if (pinnedTok.s) detail += '<div id="hero-strongs">' + pinnedTok.s + '</div>';
+        detail += '</div>';
+        if (entry.d) detail += '<div class="dsec"><div class="dlabel">Definition</div><div class="dcontent def">' + entry.d + '</div></div>';
+        if (morphHtml) detail += '<div class="dsec"><div class="dlabel">Parsing</div><div class="mgrid">' + morphHtml + '</div></div>';
+        if (kjvTags) detail += '<div class="dsec"><div class="dlabel">KJV renders as</div><div>' + kjvTags + '</div></div>';
+        if (entry.e) detail += '<div class="dsec"><div class="dlabel">Etymology</div><div class="dcontent etym">' + entry.e + '</div></div>';
+        var conc = showConcordance(pinnedTok.s);
+        if (conc) detail += conc;
+        document.getElementById('detail-inner').innerHTML = detail;
+        if (window.innerWidth <= 768) document.getElementById('detail').classList.add('open');
+      }, 100);
+    }
   }
 }
 
