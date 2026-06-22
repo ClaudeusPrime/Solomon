@@ -681,26 +681,28 @@ function doSearch(q) {
     var glyphDir = isHebrew ? ' dir="rtl"' : '';
     var shtml = '<div style="background:var(--bg3);padding:14px 16px;margin-bottom:16px;border-radius:4px">';
     shtml += '<div style="font-size:28px;color:var(--gold);font-family:Georgia,serif"' + glyphDir + '>' + (entry.g||'') + '</div>';
-    shtml += '<div style="font-size:11px;color:var(--text-faint);margin-top:4px">' + skey + (entry.t?' · '+entry.t:'') + '</div>';
+    shtml += '<div style="font-size:11px;color:var(--text-faint);margin-top:4px">' + skey + (entry.t?' &middot; '+entry.t:'') + '</div>';
     shtml += '<div style="font-size:13px;color:var(--text);margin-top:6px">' + (entry.d||'') + '</div>';
     shtml += '</div>';
     shtml += '<div style="color:var(--text-faint);font-size:11px;margin-bottom:16px">' + svids.length + ' occurrence' + (svids.length!==1?'s':'') + '</div>';
     var lastSec = null;
     for (var si2=0; si2<svids.length; si2++) {
-      var sv=searchIndex.v[svids[si2]];
-      var sec2=OT_ORDER.indexOf(sv[0])>=0?'Old Testament':'New Testament';
-      if (sec2!==lastSec) {
-        shtml+='<div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-faint);margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">'+sec2+'</div>';
-        lastSec=sec2;
+      var sv = searchIndex.v[svids[si2]];
+      var abbr2 = sv[0], ch2 = sv[1], v2 = sv[2], text2 = sv[3];
+      var sec2 = OT_ORDER.indexOf(abbr2)>=0 ? 'Old Testament' : 'New Testament';
+      if (sec2 !== lastSec) {
+        shtml += '<div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-faint);margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">' + sec2 + '</div>';
+        lastSec = sec2;
       }
-      shtml+='<div class="sr-ref" onclick="jumpTo(''+sv[0]+'','+sv[1]+')">'+(BOOK_NAMES_S[sv[0]]||sv[0])+' '+sv[1]+':'+sv[2]+'</div>';
-      shtml+='<div class="sr-text">'+sv[3]+'</div>';
+      var bname2 = BOOK_NAMES_S[abbr2] || abbr2;
+      shtml += '<div class="sr-ref" onclick="jumpTo(this.dataset.a,this.dataset.c)" data-a="' + abbr2 + '" data-c="' + ch2 + '">' + bname2 + ' ' + ch2 + ':' + v2 + '</div>';
+      shtml += '<div class="sr-text">' + text2 + '</div>';
     }
     sr.innerHTML = shtml;
     return;
   }
 
-  var ql = q.toLowerCase().trim();
+    var ql = q.toLowerCase().trim();
   var vids = searchIndex.w[ql] || [];
 
   // Also try partial matches for words not exactly in index
