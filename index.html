@@ -210,7 +210,7 @@ function renderBookList() {
   for (var i = 0; i < ALL_BOOKS.length; i++) {
     var b = ALL_BOOKS[i];
     html += '<div class="book-item">';
-    html += '<button class="book-btn" data-abbr="' + b.a + '" onclick="toggleBook(this)">' + b.n + ' <span class="arrow">&#9660;</span></button>';
+    html += '<button class="book-btn" data-abbr="' + b.a + '" onclick="toggleBook(this)">' + b.n + ' <span class="arrow">&#9658;</span></button>';
     html += '<div class="book-chapters" id="bc-' + b.a + '"></div>';
     html += '</div>';
   }
