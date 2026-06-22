@@ -111,6 +111,10 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #detail-handle{display:none}
   #detail{transform:none !important}
 }
+.concordance{max-height:200px;overflow-y:auto;margin-top:4px}
+.conc-ref{font-size:12px;color:var(--gold);padding:3px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.conc-ref:hover{color:var(--text-dim)}
+.conc-ref:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -339,6 +343,8 @@ function selectWord(el) {
   if (morphHtml) detail += '<div class="dsec"><div class="dlabel">Parsing</div><div class="mgrid">' + morphHtml + '</div></div>';
   if (kjvTags) detail += '<div class="dsec"><div class="dlabel">KJV renders as</div><div>' + kjvTags + '</div></div>';
   if (entry.e) detail += '<div class="dsec"><div class="dlabel">Etymology</div><div class="dcontent etym">' + entry.e + '</div></div>';
+  var conc = showConcordance(tok.s);
+  if (conc) detail += conc;
   document.getElementById('detail-inner').innerHTML = detail;
 }
 
@@ -375,49 +381,9 @@ function setupSearch() {
   });
 }
 
-function doSearch(q) {
-  if (!currentBookData) return;
-  var ql = q.toLowerCase();
-  var results = [];
-  for (var ch in currentBookData.chapters) {
-    var verses = currentBookData.chapters[ch];
-    for (var vi = 0; vi < verses.length; vi++) {
-      var v = verses[vi];
-      var text = v.w.map(function(t) { return t.e || t.p || ''; }).join('');
-      if (text.toLowerCase().indexOf(ql) !== -1) results.push({ch: +ch, v: v, text: text});
-    }
-  }
-  function highlight(str) {
-    var lower = str.toLowerCase();
-    var out = '', i = 0;
-    while (i < str.length) {
-      var pos = lower.indexOf(ql, i);
-      if (pos === -1) { out += str.slice(i); break; }
-      out += str.slice(i, pos) + '<mark>' + str.slice(pos, pos + q.length) + '</mark>';
-      i = pos + q.length;
-    }
-    return out;
-  }
-  var sr = document.getElementById('search-results');
-  document.getElementById('reading-pane').classList.add('hidden');
-  sr.style.display = 'block';
-  if (!results.length) {
-    sr.innerHTML = '<div style="color:var(--text-faint);font-size:13px">No results in ' + currentBookData.book + '</div>';
-    return;
-  }
-  var html = '<div style="color:var(--text-faint);font-size:11px;margin-bottom:20px">' + results.length + ' verse' + (results.length > 1 ? 's' : '') + ' in ' + currentBookData.book + '</div>';
-  for (var i = 0; i < Math.min(results.length, 60); i++) {
-    var r = results[i];
-    html += '<div class="sr-ref" onclick="goChapter(' + r.ch + ');document.getElementById(\'search-input\').value=\'\'">' + currentBookData.book + ' ' + r.ch + ':' + r.v.v + '</div>';
-    html += '<div class="sr-text">' + highlight(r.text) + '</div>';
-  }
-  sr.innerHTML = html;
-}
 
-function hideSearch() {
-  document.getElementById('search-results').style.display = 'none';
-  document.getElementById('reading-pane').classList.remove('hidden');
-}
+
+
 
 function resetDetail() {
   document.getElementById('detail-inner').innerHTML =
@@ -438,6 +404,7 @@ function goHome() {
 // ── INIT ───────────────────────────────────────────────────────────────────
 renderBookList();
 setupSearch();
+loadSearchIndex();
 goHome();
 
 
@@ -467,6 +434,139 @@ function closeDetailSheet() {
   var origSelectWord = selectWord;
   selectWord = function(el) { origSelectWord(el); openDetailSheet(); };
 })();
+// ── SEARCH INDEX ──────────────────────────────────────────────────────────
+var searchIndex = null;
+
+async function loadSearchIndex() {
+  try {
+    var r = await fetch(DATA_BASE + 'search_index.json');
+    if (!r.ok) throw new Error('not ok');
+    searchIndex = await r.json();
+    console.log('Search index loaded:', searchIndex.v.length, 'verses');
+  } catch(e) {
+    console.warn('Search index not available:', e);
+  }
+}
+
+// ── WHOLE-NT SEARCH ───────────────────────────────────────────────────────
+function doSearch(q) {
+  var inp = document.getElementById('search-input');
+  var sr = document.getElementById('search-results');
+  document.getElementById('reading-pane').classList.add('hidden');
+  sr.style.display = 'block';
+
+  if (!searchIndex) {
+    sr.innerHTML = '<div style="color:var(--text-faint);font-size:13px">Search index loading...</div>';
+    return;
+  }
+
+  var ql = q.toLowerCase().trim();
+  var vids = searchIndex.w[ql] || [];
+
+  // Also try partial matches for words not exactly in index
+  if (vids.length === 0) {
+    for (var word in searchIndex.w) {
+      if (word.indexOf(ql) !== -1) {
+        var matches = searchIndex.w[word];
+        for (var i = 0; i < matches.length; i++) {
+          if (vids.indexOf(matches[i]) === -1) vids.push(matches[i]);
+        }
+      }
+    }
+  }
+
+  if (vids.length === 0) {
+    sr.innerHTML = '<div style="color:var(--text-faint);font-size:13px">No results for "' + q + '"</div>';
+    return;
+  }
+
+  function highlight(str) {
+    var lower = str.toLowerCase();
+    var out = '', i = 0;
+    while (i < str.length) {
+      var pos = lower.indexOf(ql, i);
+      if (pos === -1) { out += str.slice(i); break; }
+      out += str.slice(i, pos) + '<mark>' + str.slice(pos, pos + q.length) + '</mark>';
+      i = pos + q.length;
+    }
+    return out;
+  }
+
+  var BOOK_NAMES = {
+    Mt:'Matthew',Mk:'Mark',Lk:'Luke',Jn:'John',Ac:'Acts',
+    Ro:'Romans','1Co':'1 Corinthians','2Co':'2 Corinthians',
+    Ga:'Galatians',Eph:'Ephesians',Php:'Philippians',Col:'Colossians',
+    '1Th':'1 Thessalonians','2Th':'2 Thessalonians','1Ti':'1 Timothy',
+    '2Ti':'2 Timothy',Tit:'Titus',Phm:'Philemon',Heb:'Hebrews',
+    Jas:'James','1Pe':'1 Peter','2Pe':'2 Peter','1Jn':'1 John',
+    '2Jn':'2 John','3Jn':'3 John',Jud:'Jude',Re:'Revelation'
+  };
+
+  var html = '<div style="color:var(--text-faint);font-size:11px;margin-bottom:20px">' +
+    vids.length + ' verse' + (vids.length !== 1 ? 's' : '') + ' — NT</div>';
+
+  for (var i = 0; i < Math.min(vids.length, 100); i++) {
+    var verse = searchIndex.v[vids[i]];
+    var abbr = verse[0], ch = verse[1], v = verse[2], text = verse[3];
+    var bookName = BOOK_NAMES[abbr] || abbr;
+    html += '<div class="sr-ref" onclick="jumpTo(\'' + abbr + '\',' + ch + ')">' +
+      bookName + ' ' + ch + ':' + v + '</div>';
+    html += '<div class="sr-text">' + highlight(text) + '</div>';
+  }
+
+  if (vids.length > 100) {
+    html += '<div style="color:var(--text-faint);font-size:11px;margin-top:8px">Showing 100 of ' + vids.length + ' results — refine your search</div>';
+  }
+
+  sr.innerHTML = html;
+}
+
+// ── CONCORDANCE (all verses for a strongs number) ─────────────────────────
+function showConcordance(strongs) {
+  if (!searchIndex) return;
+  var vids = searchIndex.s[strongs] || [];
+  if (vids.length === 0) return;
+
+  var BOOK_NAMES = {
+    Mt:'Matthew',Mk:'Mark',Lk:'Luke',Jn:'John',Ac:'Acts',
+    Ro:'Romans','1Co':'1 Corinthians','2Co':'2 Corinthians',
+    Ga:'Galatians',Eph:'Ephesians',Php:'Philippians',Col:'Colossians',
+    '1Th':'1 Thessalonians','2Th':'2 Thessalonians','1Ti':'1 Timothy',
+    '2Ti':'2 Timothy',Tit:'Titus',Phm:'Philemon',Heb:'Hebrews',
+    Jas:'James','1Pe':'1 Peter','2Pe':'2 Peter','1Jn':'1 John',
+    '2Jn':'2 John','3Jn':'3 John',Jud:'Jude',Re:'Revelation'
+  };
+
+  var html = '<div class="dsec"><div class="dlabel">All occurrences (' + vids.length + ' verses)</div><div class="concordance">';
+  for (var i = 0; i < vids.length; i++) {
+    var verse = searchIndex.v[vids[i]];
+    var abbr = verse[0], ch = verse[1], v = verse[2];
+    var bookName = BOOK_NAMES[abbr] || abbr;
+    html += '<div class="conc-ref" onclick="jumpTo(\'' + abbr + '\',' + ch + ')">' +
+      bookName + ' ' + ch + ':' + v + '</div>';
+  }
+  html += '</div></div>';
+  return html;
+}
+
+// ── JUMP TO BOOK+CHAPTER ──────────────────────────────────────────────────
+async function jumpTo(abbr, ch) {
+  // Close search
+  document.getElementById('search-input').value = '';
+  hideSearch();
+  // Open book accordion
+  document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
+  document.querySelectorAll('.book-btn').forEach(function(el) { el.classList.remove('open'); });
+  var btn = document.querySelector('[data-abbr="' + abbr + '"]');
+  var bc = document.getElementById('bc-' + abbr);
+  if (btn && bc) {
+    await openBook(abbr, btn, bc);
+    goChapter(ch);
+    // Scroll book into view in nav
+    if (btn) btn.scrollIntoView({block:'nearest'});
+  }
+}
+
 </script>
 </body>
 </html>
