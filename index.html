@@ -51,6 +51,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #search-input:focus{border-color:var(--gold-dim)}
 #search-input::placeholder{color:var(--text-faint)}
 #reading-pane{flex:1;overflow-y:auto;padding:28px 44px 64px}
+#chapter-nav{display:flex;justify-content:space-between;align-items:center;padding:24px 0 8px;border-top:1px solid var(--border);margin-top:16px}
+.ch-nav-btn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:10px 20px;border-radius:3px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;min-width:44px;min-height:44px;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
+.ch-nav-btn:hover:not(:disabled){color:var(--text);border-color:var(--gold-dim)}
+.ch-nav-btn:disabled{opacity:.3;cursor:default}
+.ch-nav-btn svg{width:7px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
 #reading-pane.hidden{display:none}
 #loading{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-faint);font-size:13px}
 .verse-row{display:flex;gap:10px;margin-bottom:14px;align-items:baseline}
@@ -411,7 +416,7 @@ function renderVerses(verses) {
     var verseText = currentBookData.book + ' ' + currentChapter + ':' + verse.v + ' — ' + verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim();
     html += '<div class="verse-row"><span class="vnum" title="Copy verse" onclick="copyVerse(this,\'' + verseText.replace(/'/g,"\\'" ) + '\')">' + verse.v + '</span><span class="verse-body">' + words + '</span></div>';
   }
-  document.getElementById('reading-pane').innerHTML = html;
+  document.getElementById('reading-pane').innerHTML = html + buildChapterNav();
   if (pinnedStrongs) {
     setTimeout(function() { highlightAndScroll(pinnedStrongs); }, 50);
   }
@@ -903,6 +908,24 @@ async function jumpTo(abbr, ch) {
       }, 100);
     }
   }
+}
+
+function buildChapterNav() {
+  var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
+  var first = chs[0];
+  var last = chs[chs.length - 1];
+  var prevDisabled = currentChapter <= first ? ' disabled' : '';
+  var nextDisabled = currentChapter >= last ? ' disabled' : '';
+  var prevLabel = currentChapter > first ? 'Chapter ' + (currentChapter - 1) : 'Chapter ' + currentChapter;
+  var nextLabel = currentChapter < last ? 'Chapter ' + (currentChapter + 1) : 'Chapter ' + currentChapter;
+  return '<div id="chapter-nav">' +
+    '<button class="ch-nav-btn"' + prevDisabled + ' onclick="goChapter(' + (currentChapter - 1) + ')">' +
+    '<svg viewBox="0 0 7 13"><polyline points="6,1 1,6.5 6,12"/></svg>' + prevLabel +
+    '</button>' +
+    '<button class="ch-nav-btn"' + nextDisabled + ' onclick="goChapter(' + (currentChapter + 1) + ')">' +
+    nextLabel + '<svg viewBox="0 0 7 13"><polyline points="1,1 6,6.5 1,12"/></svg>' +
+    '</button>' +
+    '</div>';
 }
 
 function toggleDark() {
