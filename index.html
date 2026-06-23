@@ -47,9 +47,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .mode-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
 .mode-btn.active{background:var(--gold);border-color:var(--gold);color:#28231C;font-weight:500}
 .mode-btn:not(.active):hover{color:var(--text);background:var(--bg3)}
-#search-input{margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 12px;font-size:12px;font-family:'Inter',sans-serif;border-radius:3px;width:190px;outline:none;transition:border-color .15s}
+#search-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 28px 6px 12px;font-size:12px;font-family:'Inter',sans-serif;border-radius:3px;width:190px;outline:none;transition:border-color .15s}
 #search-input:focus{border-color:var(--gold-dim)}
 #search-input::placeholder{color:var(--text-faint)}
+#search-wrap{margin-left:auto;display:flex;align-items:center;position:relative}
+#search-clear{display:none;position:absolute;right:8px;background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;line-height:1;padding:0;width:16px;height:16px;align-items:center;justify-content:center}
+#search-clear:hover{color:var(--text)}
+#search-clear.visible{display:flex}
 #reading-pane{flex:1;overflow-y:auto;padding:28px 44px 64px}
 #chapter-nav{display:flex;justify-content:space-between;align-items:center;padding:24px 0 8px;border-top:1px solid var(--border);margin-top:16px}
 .ch-nav-btn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:10px 20px;border-radius:3px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;min-width:44px;min-height:44px;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
@@ -189,7 +193,10 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button id="btn-kjv" class="mode-btn active" onclick="setMode('kjv')">KJV</button>
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
       </div>
-      <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
+      <div id="search-wrap">
+        <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
+        <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
+      </div>
       <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☾</button>
     </div>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
@@ -368,7 +375,10 @@ function goChapter(ch) {
   resetDetail();
   selectedWordEl = null;
   renderVerses(verses);
-  document.getElementById('reading-pane').scrollTop = 0;
+  var rp = document.getElementById('reading-pane');
+  rp.scrollTop = 0;
+  rp.scrollTo(0, 0);
+  window.scrollTo(0, 0);
   updateHash(currentBook, ch);
 }
 
@@ -491,6 +501,7 @@ function setupSearch() {
   var inp = document.getElementById('search-input');
   var t;
   inp.addEventListener('input', function() {
+    document.getElementById('search-clear').classList.toggle('visible', inp.value.length > 0);
     clearTimeout(t);
     t = setTimeout(function() {
       var q = inp.value.trim();
@@ -556,7 +567,10 @@ function highlightAndScroll(strongs) {
 function goHome() {
   document.getElementById('search-input').value = '';
   hideSearch();
-  document.getElementById('reading-pane').scrollTop = 0;
+  var rp = document.getElementById('reading-pane');
+  rp.scrollTop = 0;
+  rp.scrollTo(0, 0);
+  window.scrollTo(0, 0);
   var btn = document.querySelector('[data-abbr="Gen"]');
   var bc = document.getElementById('bc-Gen');
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
@@ -910,6 +924,14 @@ async function jumpTo(abbr, ch) {
       }, 100);
     }
   }
+}
+
+function clearSearch() {
+  var inp = document.getElementById('search-input');
+  inp.value = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  hideSearch();
+  inp.focus();
 }
 
 function buildChapterNav() {
