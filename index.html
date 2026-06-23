@@ -70,6 +70,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .ew.linked{cursor:pointer;transition:color .1s,background .1s}
 .ew.linked:hover{color:var(--gold);background:rgba(201,168,76,.1)}
 .ew.selected{color:var(--bg) !important;background:var(--gold) !important}
+.ew.concordance-match{background:rgba(201,168,76,.25);border-radius:2px}
 .ew.unlinked,.ew.supplied{color:var(--text)}
 .ew.supplied{font-style:italic}
 .punct{display:inline}
@@ -441,7 +442,7 @@ function selectWord(el) {
     selectedWordEl = null;
     pinnedTok = null;
     pinnedStrongs = null;
-    document.querySelectorAll('.ew.selected').forEach(function(w) { w.classList.remove('selected'); });
+    clearHighlights();
     resetDetail();
     return;
   }
@@ -449,6 +450,7 @@ function selectWord(el) {
   pinnedTok = tok;
   pinnedStrongs = tok.s || null;
   if (selectedWordEl) selectedWordEl.classList.remove('selected');
+  clearHighlights();
   selectedWordEl = el;
   el.classList.add('selected');
   var entry = LEX[tok.s] || {};
@@ -555,22 +557,20 @@ function resetDetail() {
 function setLoading(msg) { document.getElementById('reading-pane').innerHTML = '<div id="loading">' + msg + '</div>'; }
 
 // ── HOME ───────────────────────────────────────────────────────────────────
+function clearHighlights() {
+  document.querySelectorAll('.ew.concordance-match').forEach(function(w) { w.classList.remove('concordance-match'); });
+}
+
 function highlightAndScroll(strongs) {
-  // Find all linked words in the reading pane
+  clearHighlights();
   var words = document.querySelectorAll('.ew.linked');
-  var first = null;
   for (var i = 0; i < words.length; i++) {
     try {
       var tok = JSON.parse(decodeURIComponent(words[i].dataset.w));
-      if (tok.s === strongs) {
-        words[i].classList.add('selected');
-        if (!first) first = words[i];
+      if (tok.s === strongs && words[i] !== selectedWordEl) {
+        words[i].classList.add('concordance-match');
       }
     } catch(e) {}
-  }
-  // Scroll first occurrence into view
-  if (first) {
-    first.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 }
 
