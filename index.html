@@ -435,6 +435,16 @@ function renderVerses(verses) {
 
 // ── WORD CLICK ─────────────────────────────────────────────────────────────
 function selectWord(el) {
+  // Tap again to deselect
+  if (el === selectedWordEl) {
+    el.classList.remove('selected');
+    selectedWordEl = null;
+    pinnedTok = null;
+    pinnedStrongs = null;
+    document.querySelectorAll('.ew.selected').forEach(function(w) { w.classList.remove('selected'); });
+    resetDetail();
+    return;
+  }
   var tok = JSON.parse(decodeURIComponent(el.dataset.w));
   pinnedTok = tok;
   pinnedStrongs = tok.s || null;
