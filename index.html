@@ -48,7 +48,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .mode-btn.active{background:var(--gold);border-color:var(--gold);color:#28231C;font-weight:500}
 .mode-btn:not(.active):hover{color:var(--text);background:var(--bg3)}
 #search-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 28px 6px 12px;font-size:12px;font-family:'Inter',sans-serif;border-radius:3px;width:190px;outline:none;transition:border-color .15s}
-#search-input:focus{border-color:var(--gold-dim)}
+#search-input:focus{border-color:var(--gold-dim);font-size:16px}
 #search-input::placeholder{color:var(--text-faint)}
 #search-wrap{margin-left:auto;display:flex;align-items:center;position:relative}
 #search-clear{display:none;position:absolute;right:8px;background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;line-height:1;padding:0;width:16px;height:16px;align-items:center;justify-content:center}
@@ -128,7 +128,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #ref-display{font-size:13px;flex:1;text-align:center}
   #mode-toggle{flex-shrink:0}
   .mode-btn{padding:5px 8px;font-size:10px}
-  #search-input{display:block;width:120px;font-size:11px;padding:5px 24px 5px 8px}
+  #search-input{display:block;width:90px;font-size:11px;padding:5px 20px 5px 8px}
   #reading-pane{padding:16px 18px 120px}
   .verse-body{font-size:16px}
   #nav-header{padding:8px 0 4px}
@@ -195,7 +195,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
       </div>
       <div id="search-wrap">
-        <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
+        <input id="search-input" type="text" placeholder="Search..." autocomplete="off">
         <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
       </div>
       <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☾</button>
@@ -517,7 +517,7 @@ function setupSearch() {
     clearTimeout(t);
     t = setTimeout(function() {
       var q = inp.value.trim();
-      if (q.length >= 2) doSearch(q); else hideSearch();
+      if (q.length >= 2) { doSearch(q); inp.blur(); } else hideSearch();
     }, 300);
   });
   inp.addEventListener('keydown', function(e) {
