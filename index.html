@@ -128,7 +128,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #ref-display{font-size:13px;flex:1;text-align:center}
   #mode-toggle{flex-shrink:0}
   .mode-btn{padding:5px 8px;font-size:10px}
-  #search-input{display:none}
+  #search-input{display:block;width:120px;font-size:11px;padding:5px 24px 5px 8px}
   #reading-pane{padding:16px 18px 120px}
   .verse-body{font-size:16px}
   #nav-header{padding:8px 0 4px}
@@ -415,7 +415,7 @@ function renderVerses(verses) {
         if (currentMode === 'interlinear') {
           var def = getDefinition(tok.s);
           var defHtml = def ? ' <span class="def-paren">(' + def + ')</span>' : '';
-          words += '<span class="ew linked" data-w="' + d + '" onclick="selectWord(this)">' + tok.e + '</span>' + defHtml;
+          words += '<span class="ew linked' + rl + '" data-w="' + d + '" onclick="selectWord(this)">' + tok.e + '</span>' + defHtml;
         } else {
           words += '<span class="ew linked" data-w="' + d + '" onclick="selectWord(this)">' + tok.e + '</span>';
         }
