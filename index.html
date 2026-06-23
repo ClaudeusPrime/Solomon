@@ -16,19 +16,6 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#F2EEE6;--bg2:#EBE5DB;--bg3:#E3DDD3;--border:#DDD8CE;--gold:#C9A84C;--gold-dim:#A8842A;--text:#28231C;--text-dim:#60584E;--text-faint:#908878;--greek:#1C1714;--accent:#3B6D45}
-body.dark{--bg:#1A1612;--bg2:#211D18;--bg3:#2A2520;--border:#3A342C;--gold:#C9A84C;--gold-dim:#A8842A;--text:#E8E0D4;--text-dim:#A89880;--text-faint:#6A5E50;--greek:#E8E0D4;--accent:#5A9E6A}
-#dark-toggle{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 8px;border-radius:3px;cursor:pointer;font-size:14px;line-height:1;transition:all .12s;flex-shrink:0}
-#dark-toggle:hover{color:var(--text);border-color:var(--gold-dim)}
-#kbd-hint{font-size:10px;color:var(--text-faint);margin-left:auto;letter-spacing:.04em;display:none}
-@media(min-width:769px){#kbd-hint{display:block}}
-.verse-row:hover .copy-btn{opacity:1}
-.copy-btn{opacity:0;background:none;border:none;color:var(--text-faint);cursor:pointer;padding:2px 5px;font-size:11px;border-radius:2px;transition:opacity .15s,color .12s;margin-left:4px;flex-shrink:0}
-.copy-btn:hover{color:var(--gold)}
-.xref-item{font-size:12px;color:var(--gold);padding:4px 0;cursor:pointer;border-bottom:1px solid var(--border);display:block}
-.xref-item:hover{color:var(--text)}
-.xref-item:last-child{border-bottom:none}
-#verse-detail{display:none}
-#verse-detail.active{display:block}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 #app{display:grid;grid-template-columns:190px 1fr 340px;height:100vh}
 #nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -191,8 +178,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button id="btn-kjv" class="mode-btn active" onclick="setMode('kjv')">KJV</button>
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
       </div>
-      <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☾</button>
-      <span id="kbd-hint">← → navigate chapters</span>
       <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
     </div>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
@@ -204,9 +189,8 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
     <div id="detail-inner">
       <div id="detail-empty">
         <div class="empty-gk" dir="rtl">&#1489;&#1456;&#1512;&#1461;&#1488;&#1513;&#1460;&#1497;&#1514;</div>
-        <div>Click any word to see<br>its Hebrew or Greek,<br>definition, and parsing.<br><br>Click a verse number<br>to see cross-references.</div>
+        <div>Click any word to see<br>its Hebrew or Greek,<br>definition, and parsing.</div>
       </div>
-      <div id="verse-detail"></div>
     </div>
   </aside>
 </div>
@@ -417,8 +401,8 @@ function renderVerses(verses) {
         words += '<span class="ew unlinked">' + tok.e + '</span>';
       }
     }
-    var verseText = currentBookData.book + ' ' + currentChapter + ':' + verse.v + ' — ' + verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim() + ' (KJV)';
-    html += '<div class="verse-row" id="v-' + verse.v + '"><span class="vnum" title="See cross-references" onclick="showVerseDetail(\'' + currentBookData.abbr + '\',' + currentChapter + ',' + verse.v + ')">' + verse.v + '</span><span class="verse-body">' + words + '</span><button class="copy-btn" title="Copy verse" onclick="copyVerse(this,\'' + verseText.replace(/'/g, "\\'") + '\')">&#128203;</button></div>';
+    var verseText = currentBookData.book + ' ' + currentChapter + ':' + verse.v + ' — ' + verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim();
+    html += '<div class="verse-row"><span class="vnum" title="Copy verse" onclick="copyVerse(this,\'' + verseText.replace(/'/g,"\\'" ) + '\')">' + verse.v + '</span><span class="verse-body">' + words + '</span></div>';
   }
   document.getElementById('reading-pane').innerHTML = html;
   if (pinnedStrongs) {
@@ -428,11 +412,6 @@ function renderVerses(verses) {
 
 // ── WORD CLICK ─────────────────────────────────────────────────────────────
 function selectWord(el) {
-  // Hide verse detail if showing
-  var vd = document.getElementById('verse-detail');
-  if (vd) { vd.style.display = 'none'; }
-  var de = document.getElementById('detail-empty');
-  if (de) { de.style.display = ''; }
   var tok = JSON.parse(decodeURIComponent(el.dataset.w));
   pinnedTok = tok;
   pinnedStrongs = tok.s || null;
@@ -536,7 +515,7 @@ function copyVerse(el, text) {
 
 function resetDetail() {
   document.getElementById('detail-inner').innerHTML =
-    '<div id="detail-empty"><div class="empty-gk" dir="rtl">&#1489;&#1456;&#1512;&#1461;&#1488;&#1513;&#1460;&#1497;&#1514;</div><div>Click any word to see<br>its Hebrew or Greek,<br>definition, and parsing.<br><br>Click a verse number<br>to see cross-references.</div></div><div id="verse-detail"></div>';
+    '<div id="detail-empty"><div class="empty-gk" dir="rtl">בְראשִית</div><div>Click any word to see<br>its Hebrew or Greek,<br>definition, and parsing.</div></div>';
 }
 
 function setLoading(msg) { document.getElementById('reading-pane').innerHTML = '<div id="loading">' + msg + '</div>'; }
@@ -572,10 +551,8 @@ function goHome() {
 }
 
 // ── URL HASH ROUTING ───────────────────────────────────────────────────────
-function updateHash(abbr, ch, verse) {
-  var h = '#' + abbr + '/' + ch;
-  if (verse) h += '/' + verse;
-  history.replaceState(null, '', h);
+function updateHash(abbr, ch) {
+  history.replaceState(null, '', '#' + abbr + '/' + ch);
 }
 
 async function loadFromHash() {
@@ -584,7 +561,6 @@ async function loadFromHash() {
   var parts = hash.split('/');
   var abbr = parts[0];
   var ch = parseInt(parts[1]) || 1;
-  var verseNum = parts[2] ? parseInt(parts[2]) : null;
   // Check abbr is valid
   var valid = ALL_BOOKS.some(function(b) { return b.a === abbr; });
   if (!valid) { goHome(); return; }
@@ -605,16 +581,6 @@ async function loadFromHash() {
     await openBook(abbr, btn, bc);
     goChapter(ch);
     if (btn) btn.scrollIntoView({block: 'nearest'});
-    if (verseNum) {
-      setTimeout(function() {
-        var el = document.getElementById('v-' + verseNum);
-        if (el) {
-          el.scrollIntoView({block: 'center'});
-          el.style.background = 'rgba(201,168,76,.15)';
-          setTimeout(function() { el.style.background = ''; }, 2000);
-        }
-      }, 200);
-    }
   }
 }
 
@@ -930,107 +896,6 @@ async function jumpTo(abbr, ch) {
       }, 100);
     }
   }
-}
-// ── DARK MODE ──────────────────────────────────────────────────────────────
-function toggleDark() {
-  var isDark = document.body.classList.toggle('dark');
-  document.getElementById('dark-toggle').textContent = isDark ? '☀' : '☾';
-  try { localStorage.setItem('solomon-dark', isDark ? '1' : '0'); } catch(e) {}
-}
-(function() {
-  try {
-    if (localStorage.getItem('solomon-dark') === '1') {
-      document.body.classList.add('dark');
-      document.getElementById('dark-toggle').textContent = '☀';
-    }
-  } catch(e) {}
-})();
-
-// ── VERSE PERMALINK UPDATE ON CLICK ────────────────────────────────────────
-function showVerseDetail(abbr, ch, verseNum) {
-  if (!currentBookData) return;
-  // Update hash to include verse
-  updateHash(abbr, ch, verseNum);
-  // Find verse text
-  var chData = currentBookData.chapters[ch];
-  var verse = chData ? chData.find(function(v) { return v.v === verseNum; }) : null;
-  var verseText = verse ? verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim() : '';
-  var ref = currentBookData.book + ' ' + ch + ':' + verseNum;
-  // Hide word detail, show verse detail
-  document.getElementById('detail-empty').style.display = 'none';
-  var vd = document.getElementById('verse-detail');
-  vd.style.display = 'block';
-  var xrefs = getXRefs(abbr, ch, verseNum);
-  var xhtml = '';
-  if (xrefs.length) {
-    xhtml = '<div class="dsec"><div class="dlabel">Cross-references</div><div class="dcontent">';
-    for (var i = 0; i < xrefs.length; i++) {
-      var xr = xrefs[i];
-      xhtml += '<a class="xref-item" onclick="jumpTo(\'' + xr.abbr + '\',' + xr.ch + ')" href="#">' + xr.label + '</a>';
-    }
-    xhtml += '</div></div>';
-  } else {
-    xhtml = '<div class="dsec"><div class="dlabel">Cross-references</div><div class="dcontent" style="color:var(--text-faint);font-size:12px">No cross-references indexed for this verse.</div></div>';
-  }
-  vd.innerHTML =
-    '<div id="word-hero"><div id="hero-eng">' + ref + '</div>' +
-    '<div style="font-family:\'Noto Serif\',serif;font-size:15px;line-height:1.7;color:var(--text);margin-top:8px">' + verseText + '</div>' +
-    '<button style="margin-top:10px;background:none;border:1px solid var(--border);color:var(--text-faint);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px" onclick="copyVerse(this,\'' + (ref + ' \u2014 ' + verseText + ' (KJV)').replace(/'/g,"\\'") + '\')">Copy verse</button>' +
-    '</div>' + xhtml;
-  openDetailSheet();
-}
-
-// ── CROSS-REFERENCE DATA (lightweight inline dataset) ──────────────────────
-// A curated set of classic cross-references covering key passages
-var XREF_MAP = {
-  'Gen/1/1':  [{abbr:'Jhn',ch:1,label:'John 1:1–3'},{abbr:'Heb',ch:11,label:'Heb 11:3'},{abbr:'Isa',ch:45,label:'Isa 45:18'}],
-  'Gen/1/3':  [{abbr:'2Co',ch:4,label:'2 Cor 4:6'},{abbr:'Psa',ch:33,label:'Ps 33:6'}],
-  'Gen/1/26': [{abbr:'Gen',ch:9,label:'Gen 9:6'},{abbr:'Col',ch:3,label:'Col 3:10'},{abbr:'Eph',ch:4,label:'Eph 4:24'}],
-  'Gen/3/15': [{abbr:'Rom',ch:16,label:'Rom 16:20'},{abbr:'Rev',ch:12,label:'Rev 12:17'},{abbr:'Gal',ch:4,label:'Gal 4:4'}],
-  'Gen/12/3': [{abbr:'Gal',ch:3,label:'Gal 3:8'},{abbr:'Act',ch:3,label:'Acts 3:25'},{abbr:'Mat',ch:1,label:'Matt 1:1'}],
-  'Psa/22/1': [{abbr:'Mat',ch:27,label:'Matt 27:46'},{abbr:'Mrk',ch:15,label:'Mark 15:34'}],
-  'Psa/23/1': [{abbr:'Jhn',ch:10,label:'John 10:11'},{abbr:'Heb',ch:13,label:'Heb 13:20'},{abbr:'Isa',ch:40,label:'Isa 40:11'}],
-  'Psa/110/1':[{abbr:'Mat',ch:22,label:'Matt 22:44'},{abbr:'Act',ch:2,label:'Acts 2:34'},{abbr:'Heb',ch:1,label:'Heb 1:13'}],
-  'Isa/7/14': [{abbr:'Mat',ch:1,label:'Matt 1:23'},{abbr:'Luk',ch:1,label:'Luke 1:31'}],
-  'Isa/53/1': [{abbr:'Jhn',ch:12,label:'John 12:38'},{abbr:'Rom',ch:10,label:'Rom 10:16'},{abbr:'Act',ch:8,label:'Acts 8:32'}],
-  'Isa/53/5': [{abbr:'1Pe',ch:2,label:'1 Pet 2:24'},{abbr:'Rom',ch:4,label:'Rom 4:25'},{abbr:'2Co',ch:5,label:'2 Cor 5:21'}],
-  'Jer/31/31':[{abbr:'Heb',ch:8,label:'Heb 8:8'},{abbr:'Heb',ch:10,label:'Heb 10:16'},{abbr:'Luk',ch:22,label:'Luke 22:20'}],
-  'Dan/7/13': [{abbr:'Mat',ch:24,label:'Matt 24:30'},{abbr:'Rev',ch:1,label:'Rev 1:7'},{abbr:'Act',ch:1,label:'Acts 1:9'}],
-  'Mic/5/2':  [{abbr:'Mat',ch:2,label:'Matt 2:6'},{abbr:'Jhn',ch:7,label:'John 7:42'},{abbr:'Luk',ch:2,label:'Luke 2:4'}],
-  'Mal/3/1':  [{abbr:'Mat',ch:11,label:'Matt 11:10'},{abbr:'Luk',ch:7,label:'Luke 7:27'},{abbr:'Mrk',ch:1,label:'Mark 1:2'}],
-  'Mat/1/1':  [{abbr:'Gen',ch:12,label:'Gen 12:3'},{abbr:'2Sa',ch:7,label:'2 Sam 7:12'},{abbr:'Luk',ch:3,label:'Luke 3:23'}],
-  'Mat/5/3':  [{abbr:'Luk',ch:6,label:'Luke 6:20'},{abbr:'Isa',ch:57,label:'Isa 57:15'},{abbr:'Jas',ch:2,label:'Jas 2:5'}],
-  'Mat/5/17': [{abbr:'Luk',ch:24,label:'Luke 24:44'},{abbr:'Rom',ch:3,label:'Rom 3:31'},{abbr:'Rom',ch:10,label:'Rom 10:4'}],
-  'Mat/6/9':  [{abbr:'Luk',ch:11,label:'Luke 11:2'},{abbr:'Rom',ch:8,label:'Rom 8:15'},{abbr:'Gal',ch:4,label:'Gal 4:6'}],
-  'Mat/16/16':[{abbr:'Jhn',ch:6,label:'John 6:69'},{abbr:'Mrk',ch:8,label:'Mark 8:29'},{abbr:'Luk',ch:9,label:'Luke 9:20'}],
-  'Mat/28/19':[{abbr:'Mrk',ch:16,label:'Mark 16:15'},{abbr:'Act',ch:1,label:'Acts 1:8'},{abbr:'Gen',ch:1,label:'Gen 1:28'}],
-  'Jhn/1/1':  [{abbr:'Gen',ch:1,label:'Gen 1:1'},{abbr:'Col',ch:1,label:'Col 1:17'},{abbr:'Heb',ch:1,label:'Heb 1:1–2'},{abbr:'1Jn',ch:1,label:'1 John 1:1'}],
-  'Jhn/3/16': [{abbr:'Rom',ch:5,label:'Rom 5:8'},{abbr:'1Jn',ch:4,label:'1 John 4:9'},{abbr:'Isa',ch:53,label:'Isa 53:5'},{abbr:'Act',ch:16,label:'Acts 16:31'}],
-  'Jhn/10/30':[{abbr:'Jhn',ch:14,label:'John 14:9'},{abbr:'Col',ch:1,label:'Col 1:19'},{abbr:'Heb',ch:1,label:'Heb 1:3'}],
-  'Jhn/14/6': [{abbr:'Act',ch:4,label:'Acts 4:12'},{abbr:'1Ti',ch:2,label:'1 Tim 2:5'},{abbr:'Heb',ch:10,label:'Heb 10:19'}],
-  'Act/2/1':  [{abbr:'Jhn',ch:14,label:'John 14:16'},{abbr:'Jhn',ch:16,label:'John 16:7'},{abbr:'Mat',ch:3,label:'Matt 3:11'}],
-  'Act/2/38': [{abbr:'Mat',ch:28,label:'Matt 28:19'},{abbr:'Mrk',ch:16,label:'Mark 16:16'},{abbr:'Tit',ch:3,label:'Titus 3:5'}],
-  'Rom/1/16': [{abbr:'1Co',ch:1,label:'1 Cor 1:18'},{abbr:'Mrk',ch:8,label:'Mark 8:38'},{abbr:'2Ti',ch:1,label:'2 Tim 1:12'}],
-  'Rom/3/23': [{abbr:'Rom',ch:5,label:'Rom 5:12'},{abbr:'1Jn',ch:1,label:'1 John 1:8'},{abbr:'Ecc',ch:7,label:'Eccl 7:20'}],
-  'Rom/6/23': [{abbr:'Gen',ch:2,label:'Gen 2:17'},{abbr:'Rom',ch:5,label:'Rom 5:12'},{abbr:'Jas',ch:1,label:'Jas 1:15'},{abbr:'1Jn',ch:5,label:'1 John 5:11'}],
-  'Rom/8/28': [{abbr:'Gen',ch:50,label:'Gen 50:20'},{abbr:'Eph',ch:1,label:'Eph 1:11'},{abbr:'Phl',ch:1,label:'Phil 1:6'}],
-  'Rom/8/38': [{abbr:'Jhn',ch:10,label:'John 10:28'},{abbr:'1Pe',ch:1,label:'1 Pet 1:5'},{abbr:'Phl',ch:1,label:'Phil 4:7'}],
-  '1Co/13/4': [{abbr:'Mat',ch:5,label:'Matt 5:44'},{abbr:'Eph',ch:4,label:'Eph 4:2'},{abbr:'Col',ch:3,label:'Col 3:13'}],
-  'Gal/5/22': [{abbr:'Jhn',ch:15,label:'John 15:4'},{abbr:'Rom',ch:8,label:'Rom 8:9'},{abbr:'Eph',ch:5,label:'Eph 5:9'}],
-  'Eph/2/8':  [{abbr:'Tit',ch:3,label:'Titus 3:5'},{abbr:'Act',ch:15,label:'Acts 15:11'},{abbr:'Rom',ch:4,label:'Rom 4:5'}],
-  'Eph/6/11': [{abbr:'2Co',ch:10,label:'2 Cor 10:4'},{abbr:'1Pe',ch:5,label:'1 Pet 5:8'},{abbr:'Jas',ch:4,label:'Jas 4:7'}],
-  'Phl/4/13': [{abbr:'Jhn',ch:15,label:'John 15:5'},{abbr:'2Co',ch:12,label:'2 Cor 12:9'},{abbr:'1Ti',ch:1,label:'1 Tim 1:12'}],
-  'Heb/4/12': [{abbr:'Isa',ch:49,label:'Isa 49:2'},{abbr:'Eph',ch:6,label:'Eph 6:17'},{abbr:'Rev',ch:1,label:'Rev 1:16'}],
-  'Heb/11/1': [{abbr:'Rom',ch:8,label:'Rom 8:24'},{abbr:'2Co',ch:5,label:'2 Cor 5:7'},{abbr:'Heb',ch:11,label:'Heb 11:6'}],
-  'Jas/1/2':  [{abbr:'Rom',ch:5,label:'Rom 5:3'},{abbr:'1Pe',ch:1,label:'1 Pet 1:6–7'},{abbr:'Mat',ch:5,label:'Matt 5:12'}],
-  '1Pe/2/24': [{abbr:'Isa',ch:53,label:'Isa 53:5'},{abbr:'Col',ch:1,label:'Col 1:22'},{abbr:'2Co',ch:5,label:'2 Cor 5:21'}],
-  'Rev/3/20': [{abbr:'Jhn',ch:14,label:'John 14:23'},{abbr:'Luk',ch:12,label:'Luke 12:36'},{abbr:'Son',ch:5,label:'Song 5:2'}],
-  'Rev/22/13':[{abbr:'Isa',ch:44,label:'Isa 44:6'},{abbr:'Rev',ch:1,label:'Rev 1:8'},{abbr:'Isa',ch:41,label:'Isa 41:4'}]
-};
-
-function getXRefs(abbr, ch, verse) {
-  var key = abbr + '/' + ch + '/' + verse;
-  return XREF_MAP[key] || [];
 }
 
 </script>
