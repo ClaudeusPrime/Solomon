@@ -368,6 +368,7 @@ function goChapter(ch) {
   resetDetail();
   selectedWordEl = null;
   renderVerses(verses);
+  document.getElementById('reading-pane').scrollTop = 0;
   updateHash(currentBook, ch);
 }
 
@@ -555,6 +556,7 @@ function highlightAndScroll(strongs) {
 function goHome() {
   document.getElementById('search-input').value = '';
   hideSearch();
+  document.getElementById('reading-pane').scrollTop = 0;
   var btn = document.querySelector('[data-abbr="Gen"]');
   var bc = document.getElementById('bc-Gen');
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
