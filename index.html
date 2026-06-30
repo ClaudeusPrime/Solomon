@@ -147,6 +147,15 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 .fs-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
 .fs-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
+/* Floating chapter arrows */
+.float-arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:50;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim);width:36px;height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .15s,border-color .15s,background .15s;opacity:0.7;}
+.float-arrow:hover{color:var(--text);border-color:var(--gold-dim);background:var(--bg3);opacity:1;}
+.float-arrow:disabled{opacity:0.15;cursor:default;pointer-events:none;}
+.float-arrow svg{width:8px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none;}
+#arrow-prev{left:0;border-radius:0 4px 4px 0;border-left:none;}
+#arrow-next{right:0;border-radius:4px 0 0 4px;border-right:none;}
+@media (max-width:768px){.float-arrow{width:32px;height:56px;opacity:0.85;}}
+
 .conc-ref{font-size:12px;color:var(--gold);padding:3px 0;cursor:pointer;border-bottom:1px solid var(--border)}
 .conc-ref:hover{color:var(--text-dim)}
 .conc-ref:last-child{border-bottom:none}
@@ -192,6 +201,12 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
     <div id="book-list"></div>
   </nav>
   <div id="nav-overlay" onclick="closeNav()"></div>
+  <button id="arrow-prev" class="float-arrow" onclick="stepChapter(-1)" title="Previous chapter" disabled>
+    <svg viewBox="0 0 8 16"><polyline points="6,1 1,8 6,15"/></svg>
+  </button>
+  <button id="arrow-next" class="float-arrow" onclick="stepChapter(1)" title="Next chapter" disabled>
+    <svg viewBox="0 0 8 16"><polyline points="2,1 7,8 2,15"/></svg>
+  </button>
   <main id="main">
     <div id="main-header">
       <button id="hamburger" onclick="toggleNav()" aria-label="Menu"><span></span></button>
@@ -391,6 +406,7 @@ function goChapter(ch) {
   rp.scrollTo(0, 0);
   window.scrollTo(0, 0);
   updateHash(currentBook, ch);
+  updateArrows();
 }
 
 // ── LOAD BOOK ──────────────────────────────────────────────────────────────
@@ -677,6 +693,31 @@ document.addEventListener('keydown', function(e) {
     goChapter(chs[idx - 1]);
   }
 });
+
+
+// ── FLOATING CHAPTER ARROWS ────────────────────────────────────────────────
+function stepChapter(dir) {
+  if (!currentBookData) return;
+  var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
+  var idx = chs.indexOf(currentChapter);
+  var next = idx + dir;
+  if (next >= 0 && next < chs.length) goChapter(chs[next]);
+}
+
+function updateArrows() {
+  var prev = document.getElementById('arrow-prev');
+  var next = document.getElementById('arrow-next');
+  if (!prev || !next) return;
+  if (!currentBookData) {
+    prev.disabled = true;
+    next.disabled = true;
+    return;
+  }
+  var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
+  var idx = chs.indexOf(currentChapter);
+  prev.disabled = idx <= 0;
+  next.disabled = idx >= chs.length - 1;
+}
 
 function toggleNav() {
   document.getElementById('nav').classList.toggle('open');
