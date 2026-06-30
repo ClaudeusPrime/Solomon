@@ -515,7 +515,32 @@ function setMode(mode) {
   currentMode = mode;
   document.getElementById('btn-kjv').classList.toggle('active', mode === 'kjv');
   document.getElementById('btn-interlinear').classList.toggle('active', mode === 'interlinear');
-  if (currentBookData) goChapter(currentChapter);
+  if (currentBookData) {
+    var topVerse = null;
+    var rp = document.getElementById('reading-pane');
+    var rows = rp.querySelectorAll('.verse-row');
+    var rpTop = rp.getBoundingClientRect().top;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getBoundingClientRect().top >= rpTop) {
+        var vnum = rows[i].querySelector('.vnum');
+        if (vnum) topVerse = parseInt(vnum.textContent, 10);
+        break;
+      }
+    }
+    goChapter(currentChapter);
+    if (topVerse && topVerse > 1) {
+      setTimeout(function() {
+        var newRows = rp.querySelectorAll('.verse-row');
+        for (var j = 0; j < newRows.length; j++) {
+          var v = newRows[j].querySelector('.vnum');
+          if (v && parseInt(v.textContent, 10) === topVerse) {
+            newRows[j].scrollIntoView({block:'start'});
+            break;
+          }
+        }
+      }, 50);
+    }
+  }
 }
 
 // ── SEARCH ─────────────────────────────────────────────────────────────────
