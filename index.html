@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Solomon</title>
-<script>try{if(localStorage.getItem('solomon-dark')==='1')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+<script>try{var _d=localStorage.getItem('solomon-dark');if(_d===null||_d==='1')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%2230%20-5%20220%20190%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%2230%22%20y%3D%22-5%22%20width%3D%22220%22%20height%3D%22190%22%20fill%3D%22%23F2EEE6%22%2F%3E%0A%3Cg%20transform%3D%22translate%28140%2C%2095%29%22%3E%0A%20%20%3Cg%20transform%3D%22rotate%28-35%2C%200%2C%200%29%22%3E%0A%20%20%20%20%3Cpolygon%20points%3D%220%2C-80%20-8%2C-20%20-9%2C10%200%2C15%209%2C10%208%2C-20%22%20fill%3D%22%23C9A84C%22%2F%3E%0A%20%20%20%20%3Cpolygon%20points%3D%22-1%2C-80%201%2C-80%200%2C-95%22%20fill%3D%22%23C9A84C%22%2F%3E%0A%20%20%20%20%3Cpolygon%20points%3D%22-9%2C10%200%2C15%209%2C10%207%2C50%200%2C58%20-7%2C50%22%20fill%3D%22%23C9A84C%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%220%22%20y1%3D%22-85%22%20x2%3D%220%22%20y2%3D%2250%22%20stroke%3D%22%23A8842A%22%20stroke-width%3D%221.5%22%2F%3E%0A%20%20%20%20%3Crect%20x%3D%22-22%22%20y%3D%2256%22%20width%3D%2244%22%20height%3D%227%22%20rx%3D%221%22%20fill%3D%22%238A6420%22%2F%3E%0A%20%20%20%20%3Crect%20x%3D%22-5%22%20y%3D%2263%22%20width%3D%2210%22%20height%3D%2220%22%20rx%3D%221%22%20fill%3D%22%234A3C2C%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2268%22%20x2%3D%225%22%20y2%3D%2268%22%20stroke%3D%22%2360584E%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2273%22%20x2%3D%225%22%20y2%3D%2273%22%20stroke%3D%22%2360584E%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2278%22%20x2%3D%225%22%20y2%3D%2278%22%20stroke%3D%22%2360584E%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cellipse%20cx%3D%220%22%20cy%3D%2287%22%20rx%3D%227%22%20ry%3D%225%22%20fill%3D%22%238A6420%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Cg%20transform%3D%22rotate%2835%2C%200%2C%200%29%22%3E%0A%20%20%20%20%3Cpolygon%20points%3D%220%2C-80%20-8%2C-20%20-9%2C10%200%2C15%209%2C10%208%2C-20%22%20fill%3D%22%23A8842A%22%2F%3E%0A%20%20%20%20%3Cpolygon%20points%3D%22-1%2C-80%201%2C-80%200%2C-95%22%20fill%3D%22%23A8842A%22%2F%3E%0A%20%20%20%20%3Cpolygon%20points%3D%22-9%2C10%200%2C15%209%2C10%207%2C50%200%2C58%20-7%2C50%22%20fill%3D%22%23A8842A%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%220%22%20y1%3D%22-85%22%20x2%3D%220%22%20y2%3D%2250%22%20stroke%3D%22%238A6420%22%20stroke-width%3D%221.5%22%2F%3E%0A%20%20%20%20%3Crect%20x%3D%22-22%22%20y%3D%2256%22%20width%3D%2244%22%20height%3D%227%22%20rx%3D%221%22%20fill%3D%22%236A5018%22%2F%3E%0A%20%20%20%20%3Crect%20x%3D%22-5%22%20y%3D%2263%22%20width%3D%2210%22%20height%3D%2220%22%20rx%3D%221%22%20fill%3D%22%233A2C1C%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2268%22%20x2%3D%225%22%20y2%3D%2268%22%20stroke%3D%22%234A3C2C%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2273%22%20x2%3D%225%22%20y2%3D%2273%22%20stroke%3D%22%234A3C2C%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22-5%22%20y1%3D%2278%22%20x2%3D%225%22%20y2%3D%2278%22%20stroke%3D%22%234A3C2C%22%20stroke-width%3D%221%22%2F%3E%0A%20%20%20%20%3Cellipse%20cx%3D%220%22%20cy%3D%2287%22%20rx%3D%227%22%20ry%3D%225%22%20fill%3D%22%236A5018%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Solomon — Iron Sharpens Iron</title>
@@ -315,7 +315,7 @@ function renderBookList() {
       if (lastT !== null) html += '</div></div>';
       var tid = b.t === 'OT' ? 'grp-ot' : 'grp-nt';
       var tlabel = b.t === 'OT' ? 'Old Testament' : 'New Testament';
-      var openClass = b.t === 'OT' ? ' open' : '';
+      var openClass = '';
       html += '<div class="testament-group">';
       html += '<div class="testament-header' + openClass + '" onclick="toggleTestament(this,\'' + tid + '\')">';
       html += '<span class="testament-title">' + tlabel + '</span>';
@@ -624,13 +624,23 @@ function goHome() {
 }
 
 // ── URL HASH ROUTING ───────────────────────────────────────────────────────
+function savePosition(abbr, ch) {
+  try { localStorage.setItem('solomon-pos', abbr + '/' + ch); } catch(e) {}
+}
+
 function updateHash(abbr, ch) {
   history.replaceState(null, '', '#' + abbr + '/' + ch);
 }
 
 async function loadFromHash() {
   var hash = window.location.hash.replace('#', '');
-  if (!hash) { goHome(); return; }
+  if (!hash) {
+    try {
+      var saved = localStorage.getItem('solomon-pos');
+      if (saved) { window.location.hash = saved; hash = saved; }
+    } catch(e) {}
+    if (!hash) { goHome(); return; }
+  }
   var parts = hash.split('/');
   var abbr = parts[0];
   var ch = parseInt(parts[1]) || 1;
@@ -1021,7 +1031,8 @@ function toggleDark() {
 // Apply dark mode on load (picks up flash-prevention class set in <head>)
 (function() {
   try {
-    if (localStorage.getItem('solomon-dark') === '1') {
+    var _d = localStorage.getItem('solomon-dark');
+    if (_d === null || _d === '1') {
       document.body.classList.add('dark');
       document.getElementById('dark-toggle').textContent = '☀';
     }
