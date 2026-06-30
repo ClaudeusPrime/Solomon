@@ -534,7 +534,7 @@ function setMode(mode) {
         for (var j = 0; j < newRows.length; j++) {
           var v = newRows[j].querySelector('.vnum');
           if (v && parseInt(v.textContent, 10) === topVerse) {
-            newRows[j].scrollIntoView({block:'start'});
+            rp.scrollTop = newRows[j].offsetTop - rp.offsetTop;
             break;
           }
         }
