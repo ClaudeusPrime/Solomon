@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&family=Noto+Serif+Display:wght@300;400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#F2EEE6;--bg2:#EBE5DB;--bg3:#E3DDD3;--border:#DDD8CE;--gold:#C9A84C;--gold-dim:#A8842A;--text:#28231C;--text-dim:#60584E;--text-faint:#908878;--greek:#1C1714;--accent:#3B6D45}
+:root{--bg:#F2EEE6;--bg2:#EBE5DB;--bg3:#E3DDD3;--border:#DDD8CE;--gold:#C9A84C;--gold-dim:#A8842A;--text:#28231C;--text-dim:#60584E;--text-faint:#908878;--greek:#1C1714;--accent:#3B6D45;--font-scale:17px}
 body.dark{--bg:#1B2A3A;--bg2:#22334A;--bg3:#2A3D55;--border:#3A5068;--gold:#C9A84C;--gold-dim:#A8842A;--text:#E8E0D4;--text-dim:#A89880;--text-faint:#7A9AB8;--greek:#E8E0D4;--accent:#5A9E6A}
 html.dark-pre body{--bg:#1B2A3A;--bg2:#22334A;--bg3:#2A3D55;--border:#3A5068;--gold:#C9A84C;--gold-dim:#A8842A;--text:#E8E0D4;--text-dim:#A89880;--text-faint:#7A9AB8;--greek:#E8E0D4;--accent:#5A9E6A}
 body{transition:background-color .2s,color .2s}
@@ -65,7 +65,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .verse-row{display:flex;gap:10px;margin-bottom:14px;align-items:baseline}
 .vnum{font-size:10px;color:var(--text-faint);min-width:22px;text-align:right;padding-top:2px;flex-shrink:0;font-variant-numeric:tabular-nums;cursor:pointer;border-radius:2px;transition:color .12s}
 .vnum:hover{color:var(--gold)}
-.verse-body{flex:1;font-family:'Noto Serif',serif;font-size:17px;line-height:1.85;color:var(--text)}
+.verse-body{flex:1;font-family:'Noto Serif',serif;font-size:var(--font-scale);line-height:1.85;color:var(--text)}
 .ew{display:inline;border-radius:2px;padding:0 1px}
 .ew.linked{cursor:pointer;transition:color .1s,background .1s}
 .ew.linked:hover{color:var(--gold);background:rgba(201,168,76,.1)}
@@ -141,6 +141,11 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #detail-close{display:none !important}
   #detail{transform:none !important}
 }
+#font-size-ctrl{display:flex;gap:0;margin-left:0}
+.fs-btn{padding:5px 10px;background:none;border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;line-height:1}
+.fs-btn:first-child{border-radius:3px 0 0 3px}
+.fs-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
+.fs-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
 .conc-ref{font-size:12px;color:var(--gold);padding:3px 0;cursor:pointer;border-bottom:1px solid var(--border)}
 .conc-ref:hover{color:var(--text-dim)}
@@ -194,6 +199,10 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
       <div id="mode-toggle">
         <button id="btn-kjv" class="mode-btn active" onclick="setMode('kjv')">KJV</button>
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
+      </div>
+      <div id="font-size-ctrl">
+        <button class="fs-btn" onclick="adjustFont(-1)" title="Decrease font size">A−</button>
+        <button class="fs-btn" onclick="adjustFont(1)" title="Increase font size">A+</button>
       </div>
       <div id="search-wrap">
         <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
@@ -963,6 +972,21 @@ function buildChapterNav() {
     '</div>';
 }
 
+// Font size control
+(function() {
+  try {
+    var saved = parseInt(localStorage.getItem('solomon-fontsize'), 10);
+    if (saved && saved >= 13 && saved <= 26) {
+      document.documentElement.style.setProperty('--font-scale', saved + 'px');
+    }
+  } catch(e) {}
+})();
+function adjustFont(dir) {
+  var current = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-scale'), 10) || 17;
+  var next = Math.min(26, Math.max(13, current + dir));
+  document.documentElement.style.setProperty('--font-scale', next + 'px');
+  try { localStorage.setItem('solomon-fontsize', next); } catch(e) {}
+}
 function toggleDark() {
   var isDark = document.body.classList.toggle('dark');
   document.documentElement.classList.toggle('dark-pre', isDark);
