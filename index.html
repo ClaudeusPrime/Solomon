@@ -147,6 +147,20 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 .fs-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
 .fs-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
+/* Sticky chapter arrows inside reading pane */
+#pane-arrow-prev,#pane-arrow-next{position:sticky;top:calc(50% - 32px);width:0;height:0;overflow:visible;z-index:10;float:left;clear:left;}
+#pane-arrow-next{float:right;clear:right;}
+#pane-arrow-prev button,#pane-arrow-next button{position:absolute;top:0;width:36px;height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;transition:color .15s,border-color .15s,background .15s;opacity:0.8;}
+#pane-arrow-prev button{left:-44px;border-radius:0 4px 4px 0;border-left:none;}
+#pane-arrow-next button{right:-44px;border-radius:4px 0 0 4px;border-right:none;}
+#pane-arrow-prev button:hover,#pane-arrow-next button:hover{color:var(--text);border-color:var(--gold-dim);background:var(--bg3);opacity:1;}
+#pane-arrow-prev button:disabled,#pane-arrow-next button:disabled{opacity:0.15;cursor:default;pointer-events:none;}
+#pane-arrow-prev svg,#pane-arrow-next svg{width:8px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none;}
+@media(max-width:768px){
+  #pane-arrow-prev button{left:-18px;width:28px;height:52px;}
+  #pane-arrow-next button{right:-18px;width:28px;height:52px;}
+}
+
 
 .conc-ref{font-size:12px;color:var(--gold);padding:3px 0;cursor:pointer;border-bottom:1px solid var(--border)}
 .conc-ref:hover{color:var(--text-dim)}
@@ -440,7 +454,15 @@ function renderVerses(verses) {
     var verseText = currentBookData.book + ' ' + currentChapter + ':' + verse.v + ' — ' + verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim();
     html += '<div class="verse-row"><span class="vnum" title="Copy verse" onclick="copyVerse(this,\'' + verseText.replace(/'/g,"\\'" ) + '\')">' + verse.v + '</span><span class="verse-body">' + words + '</span></div>';
   }
-  document.getElementById('reading-pane').innerHTML = buildChapterNav() + html + buildChapterNav();
+  var bookIdx = ALL_BOOKS.findIndex(function(b) { return b.a === currentBook; });
+  var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
+  var atFirst = currentChapter <= chs[0] && bookIdx <= 0;
+  var atLast = currentChapter >= chs[chs.length-1] && bookIdx >= ALL_BOOKS.length - 1;
+  var prevDis = atFirst ? ' disabled' : '';
+  var nextDis = atLast ? ' disabled' : '';
+  var stickyPrev = '<div id="pane-arrow-prev"><button onclick="stepChapter(-1)"' + prevDis + ' title="Previous chapter"><svg viewBox="0 0 8 16"><polyline points="6,1 1,8 6,15"/></svg></button></div>';
+  var stickyNext = '<div id="pane-arrow-next"><button onclick="stepChapter(1)"' + nextDis + ' title="Next chapter"><svg viewBox="0 0 8 16"><polyline points="2,1 7,8 2,15"/></svg></button></div>';
+  document.getElementById('reading-pane').innerHTML = stickyPrev + stickyNext + html + buildChapterNav();
   if (pinnedStrongs) {
     setTimeout(function() { highlightAndScroll(pinnedStrongs); }, 50);
   }
