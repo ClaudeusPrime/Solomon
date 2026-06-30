@@ -650,17 +650,6 @@ async function loadFromHash() {
   if (!valid) { goHome(); return; }
   var btn = document.querySelector('[data-abbr="' + abbr + '"]');
   var bc = document.getElementById('bc-' + abbr);
-  // Open the correct testament group
-  var book = ALL_BOOKS.find(function(b) { return b.a === abbr; });
-  if (book) {
-    var grpId = book.t === 'OT' ? 'grp-ot' : 'grp-nt';
-    var grp = document.getElementById(grpId);
-    var hdr = grp ? grp.previousElementSibling : null;
-    if (grp && !grp.classList.contains('open')) {
-      grp.classList.add('open');
-      if (hdr) hdr.classList.add('open');
-    }
-  }
   if (btn && bc) {
     await openBook(abbr, btn, bc);
     goChapter(ch);
