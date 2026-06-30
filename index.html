@@ -111,7 +111,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   #app{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:100vh;position:relative}
   #nav{position:fixed;top:0;left:0;bottom:0;width:280px;z-index:100;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.15)}
   #nav.open{transform:translateX(0)}
@@ -134,7 +134,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   .verse-body{font-size:var(--font-scale)}
   #nav-header{padding:8px 0 4px}
 }
-@media (min-width: 901px) {
+@media (min-width: 1101px) {
   #hamburger{display:none}
   #nav-overlay{display:none !important}
   #detail-handle{display:none}
@@ -156,7 +156,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 #pane-arrow-prev button:hover,#pane-arrow-next button:hover{color:var(--text);border-color:var(--gold-dim);background:var(--bg3);opacity:1;}
 #pane-arrow-prev button:disabled,#pane-arrow-next button:disabled{opacity:0.15;cursor:default;pointer-events:none;}
 #pane-arrow-prev svg,#pane-arrow-next svg{width:8px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none;}
-@media(max-width:900px){
+@media(max-width:1100px){
   #pane-arrow-prev button{left:-18px;width:28px;height:52px;}
   #pane-arrow-next button{right:-18px;width:28px;height:52px;}
 }
@@ -751,7 +751,7 @@ function closeNav() {
   document.getElementById('nav-overlay').classList.remove('open');
 }
 function openDetailSheet() {
-  if (window.innerWidth <= 900) document.getElementById('detail').classList.add('open');
+  if (window.innerWidth <= 1100) document.getElementById('detail').classList.add('open');
 }
 function closeDetailSheet() {
   document.getElementById('detail').classList.remove('open');
@@ -764,7 +764,7 @@ function closeDetailSheet() {
     if (e.changedTouches[0].clientY - startY > 60) closeDetailSheet();
   }, {passive:true});
   var origToggleBook = toggleBook;
-  toggleBook = function(btn) { origToggleBook(btn); if (window.innerWidth <= 900) setTimeout(closeNav, 300); };
+  toggleBook = function(btn) { origToggleBook(btn); if (window.innerWidth <= 1100) setTimeout(closeNav, 300); };
   var origSelectWord = selectWord;
   selectWord = function(el) { origSelectWord(el); openDetailSheet(); };
 })();
@@ -1029,7 +1029,7 @@ async function jumpTo(abbr, ch) {
         var conc = showConcordance(pinnedTok.s);
         if (conc) detail += conc;
         document.getElementById('detail-inner').innerHTML = detail;
-        if (window.innerWidth <= 900) document.getElementById('detail').classList.add('open');
+        if (window.innerWidth <= 1100) document.getElementById('detail').classList.add('open');
       }, 100);
     }
   }
