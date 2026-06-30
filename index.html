@@ -208,7 +208,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
         <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
       </div>
-      <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☾</button>
+      <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☀</button>
     </div>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
     <div id="search-results"></div>
@@ -630,6 +630,7 @@ function savePosition(abbr, ch) {
 
 function updateHash(abbr, ch) {
   history.replaceState(null, '', '#' + abbr + '/' + ch);
+  savePosition(abbr, ch);
 }
 
 async function loadFromHash() {
