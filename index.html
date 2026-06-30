@@ -147,14 +147,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 .fs-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
 .fs-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
-/* Floating chapter arrows */
-.float-arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:50;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim);width:36px;height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .15s,border-color .15s,background .15s;opacity:0.7;}
-.float-arrow:hover{color:var(--text);border-color:var(--gold-dim);background:var(--bg3);opacity:1;}
-.float-arrow:disabled{opacity:0.15;cursor:default;pointer-events:none;}
-.float-arrow svg{width:8px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none;}
-#arrow-prev{left:0;border-radius:0 4px 4px 0;border-left:none;}
-#arrow-next{right:0;border-radius:4px 0 0 4px;border-right:none;}
-@media (max-width:768px){.float-arrow{width:32px;height:56px;opacity:0.85;}}
 
 .conc-ref{font-size:12px;color:var(--gold);padding:3px 0;cursor:pointer;border-bottom:1px solid var(--border)}
 .conc-ref:hover{color:var(--text-dim)}
@@ -201,12 +193,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
     <div id="book-list"></div>
   </nav>
   <div id="nav-overlay" onclick="closeNav()"></div>
-  <button id="arrow-prev" class="float-arrow" onclick="stepChapter(-1)" title="Previous chapter" disabled>
-    <svg viewBox="0 0 8 16"><polyline points="6,1 1,8 6,15"/></svg>
-  </button>
-  <button id="arrow-next" class="float-arrow" onclick="stepChapter(1)" title="Next chapter" disabled>
-    <svg viewBox="0 0 8 16"><polyline points="2,1 7,8 2,15"/></svg>
-  </button>
   <main id="main">
     <div id="main-header">
       <button id="hamburger" onclick="toggleNav()" aria-label="Menu"><span></span></button>
@@ -454,7 +440,7 @@ function renderVerses(verses) {
     var verseText = currentBookData.book + ' ' + currentChapter + ':' + verse.v + ' — ' + verse.w.map(function(t){return t.e||'';}).join(' ').replace(/\s+([,.;:?!])/g,'$1').trim();
     html += '<div class="verse-row"><span class="vnum" title="Copy verse" onclick="copyVerse(this,\'' + verseText.replace(/'/g,"\\'" ) + '\')">' + verse.v + '</span><span class="verse-body">' + words + '</span></div>';
   }
-  document.getElementById('reading-pane').innerHTML = html + buildChapterNav();
+  document.getElementById('reading-pane').innerHTML = buildChapterNav() + html + buildChapterNav();
   if (pinnedStrongs) {
     setTimeout(function() { highlightAndScroll(pinnedStrongs); }, 50);
   }
@@ -701,7 +687,21 @@ function stepChapter(dir) {
   var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
   var idx = chs.indexOf(currentChapter);
   var next = idx + dir;
-  if (next >= 0 && next < chs.length) goChapter(chs[next]);
+  if (next >= 0 && next < chs.length) {
+    goChapter(chs[next]);
+  } else {
+    // Cross book boundary
+    var bookIdx = ALL_BOOKS.findIndex(function(b) { return b.a === currentBook; });
+    var targetBook = ALL_BOOKS[bookIdx + dir];
+    if (!targetBook) return;
+    var btn = document.querySelector('[data-abbr="' + targetBook.a + '"]');
+    var bc = document.getElementById('bc-' + targetBook.a);
+    openBook(targetBook.a, btn, bc).then(function() {
+      var newChs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
+      // If going back, land on last chapter; if going forward, first chapter (openBook already does ch 1)
+      if (dir === -1) goChapter(newChs[newChs.length - 1]);
+    });
+  }
 }
 
 function updateArrows() {
@@ -715,8 +715,9 @@ function updateArrows() {
   }
   var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
   var idx = chs.indexOf(currentChapter);
-  prev.disabled = idx <= 0;
-  next.disabled = idx >= chs.length - 1;
+  var bookIdx = ALL_BOOKS.findIndex(function(b) { return b.a === currentBook; });
+  prev.disabled = idx <= 0 && bookIdx <= 0;
+  next.disabled = idx >= chs.length - 1 && bookIdx >= ALL_BOOKS.length - 1;
 }
 
 function toggleNav() {
@@ -1024,18 +1025,34 @@ function buildChapterNav() {
   var chs = Object.keys(currentBookData.chapters).map(Number).sort(function(a,b){return a-b;});
   var first = chs[0];
   var last = chs[chs.length - 1];
-  var prevDisabled = currentChapter <= first ? ' disabled' : '';
-  var nextDisabled = currentChapter >= last ? ' disabled' : '';
-  var prevLabel = currentChapter > first ? 'Chapter ' + (currentChapter - 1) : 'Chapter ' + currentChapter;
-  var nextLabel = currentChapter < last ? 'Chapter ' + (currentChapter + 1) : 'Chapter ' + currentChapter;
-  return '<div id="chapter-nav">' +
-    '<button class="ch-nav-btn"' + prevDisabled + ' onclick="goChapter(' + (currentChapter - 1) + ')">' +
+  var bookIdx = ALL_BOOKS.findIndex(function(b) { return b.a === currentBook; });
+  var atFirstChapter = currentChapter <= first;
+  var atLastChapter = currentChapter >= last;
+  var atFirstBook = bookIdx <= 0;
+  var atLastBook = bookIdx >= ALL_BOOKS.length - 1;
+  var prevDisabled = (atFirstChapter && atFirstBook) ? ' disabled' : '';
+  var nextDisabled = (atLastChapter && atLastBook) ? ' disabled' : '';
+  // Label: prev chapter number within book, or previous book name at boundary
+  var prevLabel, nextLabel;
+  if (atFirstChapter && !atFirstBook) {
+    prevLabel = ALL_BOOKS[bookIdx - 1].n;
+  } else {
+    prevLabel = 'Chapter ' + (currentChapter - 1);
+  }
+  if (atLastChapter && !atLastBook) {
+    nextLabel = ALL_BOOKS[bookIdx + 1].n;
+  } else {
+    nextLabel = 'Chapter ' + (currentChapter + 1);
+  }
+  var nav = '<div id="chapter-nav">' +
+    '<button class="ch-nav-btn"' + prevDisabled + ' onclick="stepChapter(-1)">' +
     '<svg viewBox="0 0 7 13"><polyline points="6,1 1,6.5 6,12"/></svg>' + prevLabel +
     '</button>' +
-    '<button class="ch-nav-btn"' + nextDisabled + ' onclick="goChapter(' + (currentChapter + 1) + ')">' +
+    '<button class="ch-nav-btn"' + nextDisabled + ' onclick="stepChapter(1)">' +
     nextLabel + '<svg viewBox="0 0 7 13"><polyline points="1,1 6,6.5 1,12"/></svg>' +
     '</button>' +
     '</div>';
+  return nav;
 }
 
 // Font size control
