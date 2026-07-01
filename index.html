@@ -29,6 +29,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #app{display:grid;grid-template-columns:190px 1fr 340px;height:100vh}
 #nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 #nav-header{padding:0;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#nav-search{padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
 #book-list{overflow-y:auto;flex:1;padding:6px 0}
 #nav-settings{flex-shrink:0;border-top:1px solid var(--border);padding:10px 14px;display:none}
 #nav-settings-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-faint);margin-bottom:7px}
@@ -57,10 +58,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .mode-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
 .mode-btn.active{background:var(--gold);border-color:var(--gold);color:#28231C;font-weight:500}
 .mode-btn:not(.active):hover{color:var(--text);background:var(--bg3)}
-#search-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 28px 6px 12px;font-size:12px;font-family:'Inter',sans-serif;border-radius:3px;width:190px;outline:none;transition:border-color .15s}
+#search-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 28px 6px 12px;font-size:12px;font-family:'Inter',sans-serif;border-radius:3px;width:100%;outline:none;transition:border-color .15s}
 #search-input:focus{border-color:var(--gold-dim)}
 #search-input::placeholder{color:var(--text-faint)}
-#search-wrap{margin-left:auto;display:flex;align-items:center;position:relative}
+#search-wrap{display:flex;align-items:center;position:relative}
 #search-clear{display:none;position:absolute;right:8px;background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;line-height:1;padding:0;width:16px;height:16px;align-items:center;justify-content:center}
 #search-clear:hover{color:var(--text)}
 #search-clear.visible{display:flex}
@@ -141,8 +142,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #ref-display{font-size:13px;flex:1;text-align:center}
   #mode-toggle{flex-shrink:0}
   .mode-btn{padding:5px 8px;font-size:10px}
-  #search-input{display:block;width:auto;min-width:0;flex:1}
-  #search-wrap{margin-left:0;flex:1;min-width:0}
   #reading-pane{padding:16px 18px 120px}
   .verse-body{font-size:var(--font-scale)}
   #nav-header{padding:8px 0 4px}
@@ -217,6 +216,12 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
 </g>
 </svg>
     </div>
+    <div id="nav-search">
+      <div id="search-wrap">
+        <input id="search-input" type="text" placeholder="Search..." autocomplete="off">
+        <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
+      </div>
+    </div>
     <div id="book-list"></div>
     <div id="nav-settings">
       <div id="nav-settings-label">Navigation</div>
@@ -239,10 +244,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button class="fs-btn" onclick="adjustFont(1)" title="Increase font size">A+</button>
       </div>
       <button id="rl-toggle" onclick="toggleRedLetter()" title="Red Letter Edition">RL</button>
-      <div id="search-wrap">
-        <input id="search-input" type="text" placeholder="Search..." autocomplete="off">
-        <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
-      </div>
       <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☀</button>
     </div>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
