@@ -22,6 +22,9 @@ html.dark-pre body{--bg:#1B2A3A;--bg2:#22334A;--bg3:#2A3D55;--border:#3A5068;--g
 body{transition:background-color .2s,color .2s}
 #dark-toggle{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 9px;border-radius:3px;cursor:pointer;font-size:13px;line-height:1;margin-left:8px;flex-shrink:0;transition:color .15s,border-color .15s}
 #dark-toggle:hover{color:var(--text);border-color:var(--gold-dim)}
+#rl-toggle{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 9px;border-radius:3px;cursor:pointer;font-size:11px;line-height:1;margin-left:8px;flex-shrink:0;transition:color .15s,border-color .15s;letter-spacing:.04em}
+#rl-toggle:hover{color:var(--text);border-color:var(--gold-dim)}
+#rl-toggle.active{color:var(--gold);border-color:var(--gold-dim)}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 #app{display:grid;grid-template-columns:190px 1fr 340px;height:100vh}
 #nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -220,6 +223,7 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button class="fs-btn" onclick="adjustFont(-1)" title="Decrease font size">A−</button>
         <button class="fs-btn" onclick="adjustFont(1)" title="Increase font size">A+</button>
       </div>
+      <button id="rl-toggle" onclick="toggleRedLetter()" title="Red Letter Edition">RL</button>
       <div id="search-wrap">
         <input id="search-input" type="text" placeholder="Search the Bible..." autocomplete="off">
         <button id="search-clear" title="Clear search" onclick="clearSearch()">✕</button>
@@ -521,6 +525,7 @@ const RED_LETTER_VERSES = new Set([
   "Re.3.15","Re.3.16","Re.3.17","Re.3.18","Re.3.19","Re.3.2","Re.3.20","Re.3.21","Re.3.22","Re.3.3",
   "Re.3.4","Re.3.5","Re.3.6","Re.3.7","Re.3.8","Re.3.9"
 ]);
+var redLetterEnabled = true;
 var currentBook = null;
 var currentBookData = null;
 var currentChapter = 1;
@@ -642,7 +647,7 @@ function renderVerses(verses) {
   for (var vi = 0; vi < verses.length; vi++) {
     var verse = verses[vi];
     var verseKey = currentBook + '.' + currentChapter + '.' + verse.v;
-    var isRed = RED_LETTER_VERSES.has(verseKey);
+    var isRed = redLetterEnabled && RED_LETTER_VERSES.has(verseKey);
     var words = '';
     for (var wi = 0; wi < verse.w.length; wi++) {
       var tok = verse.w[wi];
@@ -1304,12 +1309,36 @@ function adjustFont(dir) {
   document.documentElement.style.setProperty('--font-scale', next + 'px');
   try { localStorage.setItem('solomon-fontsize', next); } catch(e) {}
 }
+function toggleRedLetter() {
+  redLetterEnabled = !redLetterEnabled;
+  var btn = document.getElementById('rl-toggle');
+  if (btn) btn.classList.toggle('active', redLetterEnabled);
+  try { localStorage.setItem('solomon-redletter', redLetterEnabled ? '1' : '0'); } catch(e) {}
+  // Re-render current chapter immediately — no fetch, no scroll reset
+  if (currentBookData) {
+    var verses = currentBookData.chapters[String(currentChapter)];
+    if (verses) renderVerses(verses);
+  }
+}
 function toggleDark() {
   var isDark = document.body.classList.toggle('dark');
   document.documentElement.classList.toggle('dark-pre', isDark);
   document.getElementById('dark-toggle').textContent = isDark ? '☀' : '☾';
   try { localStorage.setItem('solomon-dark', isDark ? '1' : '0'); } catch(e) {}
 }
+// Apply red letter preference on load
+(function() {
+  try {
+    var _rl = localStorage.getItem('solomon-redletter');
+    // Default ON (null = never set = ON; '1' = ON; '0' = OFF)
+    if (_rl === '0') {
+      redLetterEnabled = false;
+    }
+    // Script is at bottom of body — DOM already parsed, set button directly
+    var btn = document.getElementById('rl-toggle');
+    if (btn) btn.classList.toggle('active', redLetterEnabled);
+  } catch(e) {}
+})();
 // Apply dark mode on load (picks up flash-prevention class set in <head>)
 (function() {
   try {
