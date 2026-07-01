@@ -64,7 +64,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .ch-btn.active{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
 #main{display:flex;flex-direction:column;overflow:hidden}
 #main-header{padding:12px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--bg);flex-shrink:0;gap:12px}
-#ref-display{font-family:'Noto Serif',serif;font-size:14px;color:var(--gold);letter-spacing:.03em}
+#ref-display{font-family:'Noto Serif',serif;font-size:14px;color:var(--gold);letter-spacing:.03em;min-width:0}
 #mode-toggle{display:flex;gap:0}
 .mode-btn{padding:5px 14px;background:none;border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;letter-spacing:.04em}
 .mode-btn:first-child{border-radius:3px 0 0 3px}
@@ -152,7 +152,8 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #dark-toggle{margin-right:6px}
   #hamburger{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;flex-shrink:0}
   #hamburger span{display:block;width:16px;height:1.5px;background:var(--text);box-shadow:0 5px 0 var(--text),0 -5px 0 var(--text)}
-  #ref-display{font-size:13px;flex:1;text-align:center}
+  #reading-header{padding:5px 14px;gap:8px}
+  #ref-display{font-size:13px}
   #mode-toggle{flex-shrink:0}
   .mode-btn{padding:5px 8px;font-size:10px}
   #reading-pane{padding:16px 18px 120px}
@@ -166,10 +167,11 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #detail-close{display:none !important}
   #detail{transform:none !important}
 }
-#back-btn{display:none;position:absolute;top:12px;left:16px;z-index:50;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap;pointer-events:auto}
+#reading-header{display:flex;align-items:center;gap:10px;padding:6px 28px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;min-height:36px}
+#back-btn{display:none;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap;flex-shrink:0;line-height:1.4}
 #back-btn:hover{color:var(--text);border-color:var(--gold-dim)}
 #back-btn.visible{display:block}
-#main{position:relative}
+#reading-header #ref-display{flex:1}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
 /* Sticky chapter arrows inside reading pane */
 #pane-arrow-prev,#pane-arrow-next{position:sticky;top:calc(50% - 32px);width:0;height:0;overflow:visible;z-index:10;float:left;clear:left;}
@@ -246,7 +248,6 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   <main id="main">
     <div id="main-header">
       <button id="hamburger" onclick="toggleNav()" aria-label="Menu"><span></span></button>
-      <span id="ref-display">—</span>
       <div id="mode-toggle">
         <button id="btn-kjv" class="mode-btn active" onclick="setMode('kjv')">KJV</button>
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
@@ -270,7 +271,10 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
       </div>
       <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☀</button>
     </div>
-    <button id="back-btn" onclick="NavHistory.back()">← Back</button>
+    <div id="reading-header">
+      <button id="back-btn" onclick="NavHistory.back()">← Back</button>
+      <span id="ref-display">—</span>
+    </div>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
     <div id="search-results"></div>
   </main>
