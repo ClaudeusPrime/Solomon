@@ -22,9 +22,22 @@ html.dark-pre body{--bg:#1B2A3A;--bg2:#22334A;--bg3:#2A3D55;--border:#3A5068;--g
 body{transition:background-color .2s,color .2s}
 #dark-toggle{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 9px;border-radius:3px;cursor:pointer;font-size:13px;line-height:1;margin-left:8px;flex-shrink:0;transition:color .15s,border-color .15s}
 #dark-toggle:hover{color:var(--text);border-color:var(--gold-dim)}
-#rl-toggle{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 9px;border-radius:3px;cursor:pointer;font-size:11px;line-height:1;margin-left:8px;flex-shrink:0;transition:color .15s,border-color .15s;letter-spacing:.04em}
-#rl-toggle:hover{color:var(--text);border-color:var(--gold-dim)}
-#rl-toggle.active{color:var(--gold);border-color:var(--gold-dim)}
+/* ── Reading Settings Panel ── */
+#aa-btn{background:none;border:1px solid var(--border);color:var(--text-faint);padding:5px 10px;border-radius:3px;cursor:pointer;font-size:13px;font-family:Georgia,serif;font-style:italic;line-height:1;flex-shrink:0;transition:color .15s,border-color .15s}
+#aa-btn:hover,#aa-btn.open{color:var(--text);border-color:var(--gold-dim)}
+#read-panel{display:none;position:absolute;top:100%;right:0;z-index:200;margin-top:4px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:18px 20px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+#read-panel.open{display:block}
+.rp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.rp-row:last-child{border-bottom:none;padding-bottom:0}
+.rp-label{font-size:12px;color:var(--text);letter-spacing:.02em}
+.rp-toggle{width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;background:var(--bg3)}
+.rp-toggle::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text-faint);transition:left .2s,background .2s}
+.rp-toggle.on{background:rgba(196,58,58,.35)}
+.rp-toggle.on::after{left:19px;background:#C41E3A}
+.rp-size{display:flex;align-items:center;gap:10px}
+.rp-size-btn{width:32px;height:28px;background:none;border:1px solid var(--border);color:var(--text-dim);font-size:13px;font-family:Georgia,serif;font-style:italic;border-radius:3px;cursor:pointer;transition:all .12s;line-height:1}
+.rp-size-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
+#rp-size-display{font-size:11px;color:var(--text-faint);min-width:28px;text-align:center}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 #app{display:grid;grid-template-columns:190px 1fr 340px;height:100vh}
 #nav{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -153,11 +166,10 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
   #detail-close{display:none !important}
   #detail{transform:none !important}
 }
-#font-size-ctrl{display:flex;gap:0;margin-left:0}
-.fs-btn{padding:5px 10px;background:none;border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;line-height:1}
-.fs-btn:first-child{border-radius:3px 0 0 3px}
-.fs-btn:last-child{border-radius:0 3px 3px 0;border-left:none}
-.fs-btn:hover{color:var(--text);background:var(--bg3);border-color:var(--gold-dim)}
+#back-btn{display:none;position:absolute;top:12px;left:16px;z-index:50;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap;pointer-events:auto}
+#back-btn:hover{color:var(--text);border-color:var(--gold-dim)}
+#back-btn.visible{display:block}
+#main{position:relative}
 .concordance{max-height:200px;overflow-y:auto;margin-top:4px}
 /* Sticky chapter arrows inside reading pane */
 #pane-arrow-prev,#pane-arrow-next{position:sticky;top:calc(50% - 32px);width:0;height:0;overflow:visible;z-index:10;float:left;clear:left;}
@@ -239,13 +251,26 @@ mark{background:rgba(201,168,76,.2);color:var(--gold);border-radius:2px;padding:
         <button id="btn-kjv" class="mode-btn active" onclick="setMode('kjv')">KJV</button>
         <button id="btn-interlinear" class="mode-btn" onclick="setMode('interlinear')">Interlinear</button>
       </div>
-      <div id="font-size-ctrl">
-        <button class="fs-btn" onclick="adjustFont(-1)" title="Decrease font size">A−</button>
-        <button class="fs-btn" onclick="adjustFont(1)" title="Increase font size">A+</button>
+      <div id="aa-wrap" style="position:relative;flex-shrink:0">
+        <button id="aa-btn" onclick="toggleReadPanel(event)" title="Reading Settings">Aa</button>
+        <div id="read-panel">
+          <div class="rp-row">
+            <span class="rp-label">Red Letter Edition</span>
+            <button class="rp-toggle" id="rl-check" onclick="toggleRedLetter()" title="Toggle red letter"></button>
+          </div>
+          <div class="rp-row">
+            <span class="rp-label">Text Size</span>
+            <div class="rp-size">
+              <button class="rp-size-btn" onclick="adjustFont(-1)" title="Decrease">a</button>
+              <span id="rp-size-display">17px</span>
+              <button class="rp-size-btn" onclick="adjustFont(1)" title="Increase">A</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <button id="rl-toggle" onclick="toggleRedLetter()" title="Red Letter Edition">RL</button>
       <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☀</button>
     </div>
+    <button id="back-btn" onclick="NavHistory.back()">← Back</button>
     <div id="reading-pane"><div id="loading">Loading...</div></div>
     <div id="search-results"></div>
   </main>
@@ -1219,6 +1244,7 @@ function showConcordance(strongs) {
 
 // ── JUMP TO BOOK+CHAPTER ──────────────────────────────────────────────────
 async function jumpTo(abbr, ch) {
+  NavHistory.push();
   document.getElementById('search-input').value = '';
   hideSearch();
   document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
@@ -1321,6 +1347,8 @@ function buildChapterNav() {
     var saved = parseInt(localStorage.getItem('solomon-fontsize'), 10);
     if (saved && saved >= 13 && saved <= 26) {
       document.documentElement.style.setProperty('--font-scale', saved + 'px');
+      var disp = document.getElementById('rp-size-display');
+      if (disp) disp.textContent = saved + 'px';
     }
   } catch(e) {}
 })();
@@ -1329,13 +1357,14 @@ function adjustFont(dir) {
   var next = Math.min(26, Math.max(13, current + dir));
   document.documentElement.style.setProperty('--font-scale', next + 'px');
   try { localStorage.setItem('solomon-fontsize', next); } catch(e) {}
+  var disp = document.getElementById('rp-size-display');
+  if (disp) disp.textContent = next + 'px';
 }
 function toggleRedLetter() {
   redLetterEnabled = !redLetterEnabled;
-  var btn = document.getElementById('rl-toggle');
-  if (btn) btn.classList.toggle('active', redLetterEnabled);
+  var chk = document.getElementById('rl-check');
+  if (chk) chk.classList.toggle('on', redLetterEnabled);
   try { localStorage.setItem('solomon-redletter', redLetterEnabled ? '1' : '0'); } catch(e) {}
-  // Re-render current chapter immediately — no fetch, no scroll reset
   if (currentBookData) {
     var verses = currentBookData.chapters[String(currentChapter)];
     if (verses) renderVerses(verses);
@@ -1347,6 +1376,60 @@ function setNavClose(mode) {
   document.getElementById('nav-close-book').classList.toggle('active', !navCloseOnChapter);
   try { localStorage.setItem('solomon-navclose', mode); } catch(e) {}
 }
+// ── READING SETTINGS PANEL ────────────────────────────────────────────────
+function toggleReadPanel(e) {
+  e.stopPropagation();
+  var panel = document.getElementById('read-panel');
+  var btn   = document.getElementById('aa-btn');
+  var isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+}
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('aa-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('read-panel').classList.remove('open');
+    document.getElementById('aa-btn').classList.remove('open');
+  }
+});
+
+// ── NAVIGATION HISTORY ────────────────────────────────────────────────────
+var NavHistory = (function() {
+  var stack = [];
+  function updateBtn() {
+    var btn = document.getElementById('back-btn');
+    if (btn) btn.classList.toggle('visible', stack.length > 0);
+  }
+  function push() {
+    if (!currentBook || !currentChapter) return;
+    var rp = document.getElementById('reading-pane');
+    stack.push({ book: currentBook, chapter: currentChapter, scrollTop: rp ? rp.scrollTop : 0 });
+    updateBtn();
+  }
+  function back() {
+    if (!stack.length) return;
+    var entry = stack.pop();
+    updateBtn();
+    _jumpToNoHistory(entry.book, entry.chapter, entry.scrollTop);
+  }
+  function clear() { stack = []; updateBtn(); }
+  return { push: push, back: back, clear: clear };
+})();
+
+async function _jumpToNoHistory(abbr, ch, scrollTop) {
+  document.getElementById('search-input').value = '';
+  hideSearch();
+  document.querySelectorAll('.book-chapters').forEach(function(el) { el.classList.remove('open'); });
+  document.querySelectorAll('.book-btn').forEach(function(el) { el.classList.remove('open'); });
+  var btn = document.querySelector('[data-abbr="' + abbr + '"]');
+  var bc = document.getElementById('bc-' + abbr);
+  if (btn && bc) {
+    await openBook(abbr, btn, bc);
+    goChapter(ch);
+    if (scrollTop) { setTimeout(function() { document.getElementById('reading-pane').scrollTop = scrollTop; }, 50); }
+    if (btn) btn.scrollIntoView({block:'nearest'});
+  }
+}
+
 function toggleDark() {
   var isDark = document.body.classList.toggle('dark');
   document.documentElement.classList.toggle('dark-pre', isDark);
@@ -1376,8 +1459,8 @@ function toggleDark() {
       redLetterEnabled = false;
     }
     // Script is at bottom of body — DOM already parsed, set button directly
-    var btn = document.getElementById('rl-toggle');
-    if (btn) btn.classList.toggle('active', redLetterEnabled);
+    var chk = document.getElementById('rl-check');
+    if (chk) chk.classList.toggle('on', redLetterEnabled);
   } catch(e) {}
 })();
 // Apply dark mode on load (picks up flash-prevention class set in <head>)
